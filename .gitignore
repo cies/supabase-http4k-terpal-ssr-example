@@ -1,0 +1,5 @@
+build/
+jte-classes/
+vendor/
+.gradle/
+.idea/
