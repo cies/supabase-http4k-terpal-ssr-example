@@ -6,6 +6,7 @@ import com.example.html.registration.RegistrationForm
 import com.example.html.registration.registrationPage
 import com.natpryce.krouton.http4k.resources
 import io.konform.validation.Valid
+import org.http4k.core.ContentType
 import org.http4k.core.HttpHandler
 import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
@@ -78,7 +79,9 @@ val unauthenticatedRouter: HttpHandler = resources {
   }
 }
 
-val staticRouter: HttpHandler = routes(
+val staticAssetsRouter: HttpHandler = routes(
+  "/favicon.ico" bind static(Classpath(), "favicon.ico" to ContentType.Text("image/x-icon")),
+  "/robots.txt" bind static(Classpath(), "robots.txt" to ContentType.TEXT_PLAIN),
   "/static" bind static(Classpath("static"))
 )
 

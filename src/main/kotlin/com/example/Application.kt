@@ -6,13 +6,11 @@ import com.example.filter.dbFilter
 import com.example.filter.jwtFilter
 import com.example.html.error.handleException
 import com.example.lib.supabase.SupabaseAuth
-import com.typesafe.config.ConfigException
 import io.github.cdimascio.dotenv.dotenv
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.createSupabaseClient
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import java.util.UUID
-import javax.naming.ConfigurationException
 import org.http4k.client.JavaHttpClient
 import org.http4k.core.Credentials
 import org.http4k.core.Filter
@@ -84,31 +82,31 @@ val supabase = SupabaseAuth(supabaseRaw)
 
 
 fun main() {
-  val baseAppStack : Filter = ServerFilters.CatchAll(::handleException)
+  val baseFilters : Filter = ServerFilters.CatchAll(::handleException)
     .then(customErrorPagesFilter)
     .then(DebuggingFilters.PrintRequestAndResponse())
     .then(ServerFilters.MicrometerMetrics.RequestCounter(registry))
     .then(ServerFilters.MicrometerMetrics.RequestTimer(registry))
 
-  val unauthenticatedStack : HttpHandler = baseAppStack
+  val staticApp : HttpHandler = baseFilters
+    .then(staticAssetsRouter)
+
+  val unauthenticatedApp : HttpHandler = baseFilters
     .then(unauthenticatedRouter)
 
-  val staticRouter : HttpHandler = baseAppStack
-    .then(staticRouter)
-
-  val authenticatedStack : HttpHandler = baseAppStack
+  val authenticatedApp : HttpHandler = baseFilters
     .then(jwtFilter(jwtContextKey, userUuidContextKey))
     .then(dbFilter(dbContextKey))
 //      .then(addSupabaseToContext(supabaseContextKey)) // not yet needed, for now we use a global
     .then(authenticatedRouter)
 
-  val app: HttpHandler = { req ->
-    val unauthenticatedResult = unauthenticatedStack(req)
+  val combinedApp: HttpHandler = { req ->
+    val unauthenticatedResult = unauthenticatedApp(req)
     if (unauthenticatedResult.status == NOT_FOUND) {
       // Only try to serve a static file if the endpoint was not found in the `resourceRouter`.
-      val authenticatedResult = authenticatedStack(req)
+      val authenticatedResult = authenticatedApp(req)
       if (authenticatedResult.status in listOf(NOT_FOUND, UNAUTHORIZED)) {
-        staticRouter(req)
+        staticApp(req)
       } else {
         authenticatedResult
       }
@@ -117,7 +115,7 @@ fun main() {
     }
   }
 
-  val server = app.asServer(SunHttp(8080)).start()
+  val server = combinedApp.asServer(SunHttp(8080)).start()
 
   println("Server started on " + server.port())
 }
