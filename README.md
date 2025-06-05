@@ -16,4 +16,4 @@ This project shows:
 * Quick developer cycles.
 * Pretty error pages. Useful error pages in development.
 * Total control of the db queries being made. 100% PGSQL.
-* Full control over the use of db transactions (nesting of transactions is allowed).
+* Full control over the use of db transactions (nesting of transactions is allowed), and no transaction is started automatically per request cycle.

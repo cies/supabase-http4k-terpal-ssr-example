@@ -1,0 +1,65 @@
+# This is our "version catalog", as Gradle calls it.
+#
+# It specifies all the versions and dependencies in a way that IntelliJ (and tools like Dependabot) can understand it.
+# It is important to know that (as it says on the Gradle website:
+# > A dependency catalog doesn’t enforce the version of a dependency: like a regular dependency notation,
+# > it declares the requested version or a rich version. That version is not necessarily the version that
+# > is selected during conflict resolution.
+# In other words: if you really want to narrow versions down (which is a good idea), you need to use `strictly` (see
+# `jacksonVersion) for individual dependencies, or version locking for the project as a whole:
+# https://docs.gradle.org/current/userguide/dependency_locking.html
+
+
+[versions]
+
+# [PINNED] = Pinned, do not upgrade this dependency (a comment should be added to explain why).
+#            Dependency pinning should be kept in sync with the `/.github/dependabot.yml` file!
+
+# Latest and greatest; used by both the `org.jetbrains.kotlin.jvm` Gradle plugin and the `kotlin-stdlin-jvm`
+# dependency: these two are always released together with the same version string.
+# https://kotlinlang.org/docs/releases.html#release-details
+kotlinVersion = "2.1.21"
+
+# Latest, see: https://github.com/http4k/http4k/releases
+http4k = "6.9.2.0"
+
+# This should align with the $kotlinVersion along the recommendation here:
+# https://github.com/Kotlin/kotlinx.html/releases
+kotlinXHtmlVersion = "0.11.0"
+
+# Used by both jackson and jackson-module-kotlin.
+# https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
+jacksonVersion = "2.19.0"
+
+
+[libraries]
+
+# Kotlin
+kotlinStdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib-jdk8", version.ref = "kotlinVersion" }
+
+# http4k (foundational web server libraries)
+http4kBom = { group = "org.http4k", name = "http4k-bom", version.ref = "http4k" }
+
+# Kotlinx.html (our HTML templating eDSL)
+kotlinxHtml = { group = "org.jetbrains.kotlinx", name = "kotlinx-html", version.ref = "kotlinXHtmlVersion" }
+kotlinxHtmlJvm = { group = "org.jetbrains.kotlinx", name = "kotlinx-html-jvm", version.ref = "kotlinXHtmlVersion" }
+
+# Jackson
+jacksonCore = { group = "com.fasterxml.jackson.core", name = "jackson-core", version.ref = "jacksonVersion" }
+jacksonDatabind = { group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jacksonVersion" }
+jacksonModuleKotlin = { group = "com.fasterxml.jackson.module", name = "jackson-module-kotlin", version.ref = "jacksonVersion" }
+jacksonDatatypeJsr310 = { group = "com.fasterxml.jackson.datatype", name = "jackson-datatype-jsr310", version.ref = "jacksonVersion" }
+
+# jjwtJackson = { group = "io.jsonwebtoken", name = "jjwt-jackson", version.ref = "jjwtVersion" }
+
+
+
+# [bundles] # Only useful for sharing sets of dependencies sbetween (sub)projects
+
+
+
+[plugins]
+
+kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlinVersion" }
+kotlinXSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinVersion" }
+

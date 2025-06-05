@@ -1,5 +1,6 @@
 build/
-jte-classes/
 vendor/
 .gradle/
+.kotlin
 .idea/
+.env

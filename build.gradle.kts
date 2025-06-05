@@ -3,11 +3,9 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 plugins {
-  kotlin("jvm") version "2.1.21"
   application
-  id("com.github.johnrengelman.shadow") version "8.1.1"
-  id("gg.jte.gradle") version "3.2.1" // same as what `http4k-templates-jte` depends on
-  id("app.cash.sqldelight") version "2.1.0"
+  alias(libs.plugins.kotlinJvm) // this makes it a Kotlin-enabled project
+  alias(libs.plugins.kotlinXSerialization)
 }
 
 buildscript {
@@ -28,17 +26,6 @@ kotlin {
 
 application {
   mainClass = "com.example.ApplicationKt"
-}
-
-tasks {
-  shadowJar {
-    archiveBaseName.set(project.name)
-    archiveClassifier = null
-    archiveVersion = null
-    mergeServiceFiles()
-    dependsOn(distTar, distZip)
-    isZip64 = true
-  }
 }
 
 repositories {
@@ -65,45 +52,46 @@ tasks {
 }
 
 dependencies {
-  implementation(platform("org.http4k:http4k-bom:6.9.2.0"))
+  implementation(platform(libs.http4kBom))
   implementation("org.http4k:http4k-client-okhttp")
   implementation("org.http4k:http4k-config")
   implementation("org.http4k:http4k-core")
   implementation("org.http4k:http4k-format-kotlinx-serialization")
   implementation("org.http4k:http4k-ops-micrometer")
   implementation("org.http4k:http4k-security-oauth")
-  implementation("org.http4k:http4k-template-jte")
   implementation(fileTree(mapOf("dir" to "vendor", "include" to listOf("*.jar")))) // pre-release of Krouton
 
-  jteGenerate("gg.jte:jte-models:3.2.1") // same as gradle plugin (see top of file)
+  // Kotlinx.html (our HTML templating eDSL)
+  implementation(libs.kotlinxHtml) // the API
+  implementation(libs.kotlinxHtmlJvm) // JVM implementation
+
+  implementation("io.konform:konform:0.11.0")
 
   implementation("com.zaxxer:HikariCP:5.1.0")
   implementation("org.postgresql:postgresql:42.7.3")
+
   implementation("org.jdbi:jdbi3-core:3.49.4")
   implementation("org.jdbi:jdbi3-postgres:3.49.4") // jdbi plugin for postgres types
   implementation("org.jdbi:jdbi3-kotlin:3.49.4")
   implementation("org.jdbi:jdbi3-kotlin-sqlobject:3.49.4")
   implementation("org.jetbrains.kotlin:kotlin-reflect") // for jdbi-kotlin (hot queries should not use reflection to improve perf)
 
+  implementation(platform("io.github.jan-tennert.supabase:bom:3.1.4"))
+  implementation("io.ktor:ktor-client-java:3.1.3") // required by the supabase-kt package (can change to OkHttp when that gets used in other places)
+  implementation("io.github.jan-tennert.supabase:auth-kt")
+  implementation("com.auth0:java-jwt:4.5.0")
+  // implementation("io.github.jan-tennert.supabase:postgrest-kt") we use SQL to query
+
+  implementation("io.github.cdimascio:dotenv-kotlin:6.5.1")
+
+  implementation(libs.jacksonCore)
+  implementation(libs.jacksonDatabind)
+  implementation(libs.jacksonModuleKotlin) // Kotlin integrations for jackson
+  implementation(libs.jacksonDatatypeJsr310) // for java8 time
+
   testImplementation("org.http4k:http4k-testing-approval")
   testImplementation("org.http4k:http4k-testing-hamkrest")
   testImplementation("org.junit.jupiter:junit-jupiter-api:5.12.0")
   testImplementation("org.junit.jupiter:junit-jupiter-engine:5.12.0")
   testImplementation("org.junit.platform:junit-platform-launcher:1.12.2")
-}
-
-jte {
-  generate()
-  binaryStaticContent.set(true)
-  jteExtension("gg.jte.models.generator.ModelExtension")
-}
-
-sqldelight {
-  databases {
-    create("Database") {
-      packageName.set("com.example")
-      dialect("app.cash.sqldelight:postgresql-dialect:2.1.0")
-      schemaOutputDirectory.set(file("src/main/sqldelight/databases"))
-    }
-  }
 }

@@ -1,5 +1,6 @@
-package com.example
+package com.example.db
 
+import com.example.Organization
 import org.jdbi.v3.sqlobject.locator.UseClasspathSqlLocator
 import org.jdbi.v3.sqlobject.statement.SqlQuery
 import org.jdbi.v3.sqlobject.statement.SqlUpdate
@@ -12,7 +13,4 @@ interface OrganizationDao {
 
   @SqlQuery
   fun fetchOrganizationById(id: Long): Organization
-
-  @SqlUpdate
-  fun setSupabaseAuthParams(userUuid: String, userEmail: String, orgId: String, issuer: String, issuedAt: String)
 }
