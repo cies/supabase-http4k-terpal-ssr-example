@@ -7,14 +7,14 @@ import org.intellij.lang.annotations.Language
 import org.jdbi.v3.core.Handle
 
 /** Cannot do this with a prepared statement (interpolation does not seem to work for `set` queries. */
-fun Handle.setSupabaseAuth(userUuid: UUID, userEmail: String, orgId: Long, issuer: Uri, issuedAt: Instant) {
+fun Handle.setSupabaseAuth(userUuid: UUID, userEmail: String, orgId: Long, issuer: String, issuedAt: String) {
   // TODO: More sanitation of "user" input!
   val q: String = @Language("PostgreSQL") """
     select set_config('request.jwt.claim.sub', '${userUuid}', false);
     select set_config('request.jwt.claim.email', '${userEmail.replace("'", "").trim()}', false);
     select set_config('request.jwt.claim.org', '$orgId', false);
     select set_config('request.jwt.claim.iss', '$issuer', false);
-    select set_config('request.jwt.claim.iat', '${issuedAt.epochSecond}', false);
+    select set_config('request.jwt.claim.iat', '$issuedAt', false);
     select set_config('request.jwt.claim.role', 'authenticated', false);
     select set_config('role', 'authenticated', false);
   """.trimIndent()

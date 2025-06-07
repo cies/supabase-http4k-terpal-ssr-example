@@ -1,4 +1,4 @@
-package com.example.html.registration
+package com.example.html.signin
 
 import com.example.Paths
 import com.example.html.subtemplate.validationErrorBlock
@@ -10,24 +10,22 @@ import io.konform.validation.ValidationResult
 import kotlinx.html.*
 import org.http4k.core.Response
 
-fun registrationPage(formContent: RegistrationForm, validatedForm: ValidationResult<RegistrationForm>): Response {
+fun signInPage(formContent: SignInForm, validatedForm: ValidationResult<SignInForm>): Response {
   return htmlPage {
     notSignedIn("Sign up") {
       h1 {
-        +"Register an account"
-      }
-      p {
-        +"Fill in your email address and the password you like to use for this service."
-      }
-      p {
-        +"After submitting the form we will send a verification email to the address to ensure it belongs to you."
+        +"Sign in"
       }
       validationErrorBlock(validatedForm)
-      form(Paths.signUp.path(), method = FormMethod.post) {
+      form(Paths.signIn.path(), method = FormMethod.post) {
+        input(InputType.hidden) {
+          name = toNameString(SignInForm::target)
+          value = formContent.target ?: ""
+        }
         p {
           label {
             +"Email address"
-            validationInput(toNameString(RegistrationForm::email), InputType.email, validatedForm) {
+            validationInput(toNameString(SignInForm::email), InputType.email, validatedForm) {
               value = formContent.email ?: ""
             }
           }
@@ -35,9 +33,18 @@ fun registrationPage(formContent: RegistrationForm, validatedForm: ValidationRes
         p {
           label {
             +"Password"
-            validationInput(toNameString(RegistrationForm::password), InputType.password, validatedForm) {
+            validationInput(toNameString(SignInForm::password), InputType.password, validatedForm) {
               value = "" // Do not put a password in the response
             }
+          }
+        }
+        p {
+          label {
+            input(InputType.checkBox) {
+              name = toNameString(SignInForm::rememberMe)
+              value = formContent.rememberMe.toString()
+            }
+            +"Remember me"
           }
         }
         button(type = ButtonType.submit) {
@@ -47,3 +54,4 @@ fun registrationPage(formContent: RegistrationForm, validatedForm: ValidationRes
     }
   }
 }
+

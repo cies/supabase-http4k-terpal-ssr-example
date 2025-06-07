@@ -37,16 +37,22 @@ val client = OkHttp() // only need one
 
 fun fetchSupabaseTokens(email: String, password: String): Result<SupabaseTokens, Pair<Status, String>> {
   val url = "$SUPABASE_BASEURL/auth/v1/token?grant_type=password"
-  val jsonBody = Json.encodeToString(mapOf("email" to email, "password" to password))
+  return fetchSupabaseTokens(url, mapOf("email" to email, "password" to password))
+}
 
+fun fetchSupabaseTokens(refreshToken: String): Result<SupabaseTokens, Pair<Status, String>> {
+  val url = "$SUPABASE_BASEURL/auth/v1/token?grant_type=refresh_token"
+  return fetchSupabaseTokens(url, mapOf("refresh_token" to refreshToken))
+}
+
+private fun fetchSupabaseTokens(url: String, jsonBody: Map<String, String>): Result<SupabaseTokens, Pair<Status, String>> {
+  val jsonBody = Json.encodeToString(jsonBody)
   val request = Request(POST, url)
     .header("Content-Type", "application/json")
     .body(jsonBody)
-
   val response = client(request)
 
   if (response.status == OK) return Success(tokenResponseLens(response))
-
   return Failure(response.status to response.bodyString())
 }
 

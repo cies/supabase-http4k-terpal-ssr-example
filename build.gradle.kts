@@ -59,8 +59,7 @@ dependencies {
   implementation("org.http4k:http4k-format-kotlinx-serialization")
   implementation("org.http4k:http4k-ops-micrometer")
   implementation("org.http4k:http4k-security-oauth")
-  implementation(fileTree(mapOf("dir" to "vendor", "include" to listOf("*.jar")))) // pre-release of Krouton
-
+  
   // Kotlinx.html (our HTML templating eDSL)
   implementation(libs.kotlinxHtml) // the API
   implementation(libs.kotlinxHtmlJvm) // JVM implementation

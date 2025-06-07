@@ -43,21 +43,4 @@ object JacksonMapper {
     .registerModule(
       defaultKotlinModule
     )
-
-//  // Ignore JSON fields that are not known for us, e.g. when a third party adds fields that we haven't specified in DTO's yet
-//  val lenientInstance: ObjectMapper = jacksonObjectMapper()
-//    .setSerializationInclusion(JsonInclude.Include.USE_DEFAULTS)
-//    // With the following two properties only fields are serialized, getters are ignored
-//    .setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE)
-//    .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
-//    // Fields that are null are by default not serialized
-//    .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-//    .registerModule(JavaTimeModule())
-//    // This was needed to be able to derive null for an enum field from an empty string value.
-//    .enable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL)
-//    // If a third party adds more fields than our DTO's have, it should not throw an error
-//    .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-//    .registerModule(
-//      defaultKotlinModule
-//    )
 }

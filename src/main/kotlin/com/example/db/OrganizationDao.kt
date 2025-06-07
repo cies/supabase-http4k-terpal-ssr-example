@@ -1,9 +1,7 @@
 package com.example.db
 
-import com.example.Organization
 import org.jdbi.v3.sqlobject.locator.UseClasspathSqlLocator
 import org.jdbi.v3.sqlobject.statement.SqlQuery
-import org.jdbi.v3.sqlobject.statement.SqlUpdate
 
 @UseClasspathSqlLocator
 interface OrganizationDao {
@@ -14,3 +12,6 @@ interface OrganizationDao {
   @SqlQuery
   fun fetchOrganizationById(id: Long): Organization
 }
+
+
+data class Organization(val id: Long, val name: String)
