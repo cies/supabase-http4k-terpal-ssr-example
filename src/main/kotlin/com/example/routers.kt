@@ -1,8 +1,8 @@
 package com.example
 
 import com.example.db.OrganizationDao
-import com.example.filter.dbFilter
-import com.example.filter.jwtFilter
+import com.example.filter.authenticatedJdbiInitializer
+import com.example.filter.jwtByCookiesAuthenticator
 import com.example.handler.registration.registerPostHandler
 import com.example.handler.registration.signInPostHandler
 import com.example.html.registration.RegistrationForm
@@ -40,12 +40,10 @@ val mainRouter = routes(
     signInPage(SignInForm.empty().copy(target = req.query("target")), Valid(SignInForm.empty()))
   },
   Paths.signIn.template() bind POST to { req -> signInPostHandler(req) },
-  Paths.oAuthRoot.template() bind GET to oauthProvider.authFilter.then { Response(OK).body("hello!") },
-  Paths.oAuthCallback.template() bind GET to oauthProvider.callback,
 
   Paths.portal.template() bind
-    jwtFilter(jwtContextKey, userUuidContextKey)
-      .then(dbFilter(dbContextKey))
+    jwtByCookiesAuthenticator(jwtContextKey, userUuidContextKey)
+      .then(authenticatedJdbiInitializer(dbContextKey))
 //      .then(addSupabaseToContext(supabaseContextKey)) // not yet needed, for now we use a global
       .then(portalRouter),
 

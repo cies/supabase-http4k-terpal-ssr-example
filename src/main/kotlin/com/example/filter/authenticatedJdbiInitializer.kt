@@ -12,7 +12,6 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.PropertyAccessor
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.Module
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinFeature
@@ -90,14 +89,16 @@ val lenientMapper: ObjectMapper = jacksonObjectMapper()
  * We prefer the programmer makes explicit transactions where they are needed (transactions can be nested),
  * instead of implicitly wrapping everything in transactions.
  */
-fun dbFilter(dbContextKey: RequestLens<Handle>) = Filter { next ->
+fun authenticatedJdbiInitializer(dbContextKey: RequestLens<Handle>) = Filter { next ->
   {
+    // Open a Jdbi [Handle]: a db connection gets taken from the pool.
     jdbi.open().use { db ->
 
+      // Get auth details from the request context.
       val jwt = jwtContextKey(it)
-
       val userMetadata = lenientMapper.readValue(jwt.claims["user_metadata"].toString(), JsonNode::class.java)
 
+      // Set the auth details on the Jdbi [Handle].
       db.setSupabaseAuth(
         userUuidContextKey(it),
         userMetadata["email"].textValue(),
@@ -106,11 +107,23 @@ fun dbFilter(dbContextKey: RequestLens<Handle>) = Filter { next ->
         jwt.claims["iat"].toString()
       )
 
+      // We have a valid JWT, so move on to the next layer (`Filter` or `Handler`) up in the stack.
+      // We do not return the result yet, because we may have to refresh the tokens (by setting the cookie).
+
+
+      // We now move on to the next layer (`Filter` or `Handler`) up in the stack, while passing Jdbi [Handle] along in
+      // the request context.
+      // We do not return the response immediately, because we want to reset the db connection (so it does not contain
+      // auth details before it is returned to the pool).
       val response = next(it.with(dbContextKey of db))
 
+      // Reset the auth details on the db connection.
       db.resetSupabaseAuth()
 
+      // Ensure this use-block evaluates to the http4k [Response].
       response
+
+      // When this scope is closed the Jdbi Handle gets closed: the db connection is returned to the pool.
     }
   }
 }

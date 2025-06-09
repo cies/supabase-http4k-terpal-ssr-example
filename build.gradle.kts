@@ -53,13 +53,13 @@ tasks {
 
 dependencies {
   implementation(platform(libs.http4kBom))
-  implementation("org.http4k:http4k-client-okhttp")
-  implementation("org.http4k:http4k-config")
   implementation("org.http4k:http4k-core")
+  implementation("org.http4k:http4k-config")
   implementation("org.http4k:http4k-format-kotlinx-serialization")
   implementation("org.http4k:http4k-ops-micrometer")
-  implementation("org.http4k:http4k-security-oauth")
-  
+  implementation("org.http4k:http4k-client-okhttp")
+  // implementation("org.http4k:http4k-security-oauth")
+
   // Kotlinx.html (our HTML templating eDSL)
   implementation(libs.kotlinxHtml) // the API
   implementation(libs.kotlinxHtmlJvm) // JVM implementation
@@ -81,7 +81,13 @@ dependencies {
   implementation("com.auth0:java-jwt:4.5.0")
   // implementation("io.github.jan-tennert.supabase:postgrest-kt") we use SQL to query
 
+  implementation("dev.forkhandles:result4k:2.22.3.0")
   implementation("io.github.cdimascio:dotenv-kotlin:6.5.1")
+
+  implementation(libs.slf4jApi) // the facade API
+  implementation(libs.log4jCore) // the core logging functionality
+  implementation(libs.log4jSlf4j2Impl) // the connection to the facade
+  implementation(libs.kotlinLogging) // a nice Kotlinesque wrapper
 
   implementation(libs.jacksonCore)
   implementation(libs.jacksonDatabind)

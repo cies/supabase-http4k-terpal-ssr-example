@@ -1,49 +1,26 @@
 package com.example
 
 import com.auth0.jwt.interfaces.DecodedJWT
-import com.example.filter.customErrorPagesFilter
+import com.example.filter.htmlErrorStyler
 import com.example.html.error.handleException
 import com.example.lib.supabase.SupabaseAuth
 import io.github.cdimascio.dotenv.dotenv
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.createSupabaseClient
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
-import java.util.UUID
-import org.http4k.client.JavaHttpClient
-import org.http4k.core.Credentials
+import java.util.*
 import org.http4k.core.HttpHandler
-import org.http4k.core.Uri
 import org.http4k.core.then
 import org.http4k.filter.DebuggingFilters
 import org.http4k.filter.MicrometerMetrics
 import org.http4k.filter.ServerFilters
 import org.http4k.lens.RequestKey
-import org.http4k.security.InsecureCookieBasedOAuthPersistence
-import org.http4k.security.OAuthProvider
-import org.http4k.security.google
 import org.http4k.server.SunHttp
 import org.http4k.server.asServer
 import org.jdbi.v3.core.Handle
 
 // this is a micrometer registry used mostly for testing - substitute the correct implementation.
 val registry = SimpleMeterRegistry()
-
-// Google OAuth Example
-// Browse to: http://localhost:9000/oauth - you'll be redirected to google for authentication
-val googleClientId = "myGoogleClientId"
-val googleClientSecret = "myGoogleClientSecret"
-
-// this is a test implementation of the OAuthPersistence interface, which should be
-// implemented by application developers
-val oAuthPersistence = InsecureCookieBasedOAuthPersistence("Google")
-
-// pre-defined configuration exist for common OAuth providers
-val oauthProvider = OAuthProvider.google(
-  JavaHttpClient(),
-  Credentials(googleClientId, googleClientSecret),
-  Uri.of("http://localhost:9000/oauth/callback"),
-  oAuthPersistence
-)
 
 
 val jwtContextKey = RequestKey.required<DecodedJWT>("jwt")
@@ -76,8 +53,13 @@ val supabase = SupabaseAuth(supabaseRaw)
 //  }
 //}
 
+
+/**
+ * This contains the http4k `Filter` stack that's the same for all request.
+ * Some `Filter`s are only applied within some routes, see the [mainRouter].
+ */
 val app: HttpHandler = ServerFilters.CatchAll(::handleException)
-  .then(customErrorPagesFilter)
+  .then(htmlErrorStyler)
   .then(DebuggingFilters.PrintRequestAndResponse())
   .then(ServerFilters.MicrometerMetrics.RequestCounter(registry))
   .then(ServerFilters.MicrometerMetrics.RequestTimer(registry))

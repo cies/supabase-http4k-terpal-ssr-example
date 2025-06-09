@@ -32,6 +32,10 @@ kotlinXHtmlVersion = "0.11.0"
 jacksonVersion = "2.19.0"
 
 
+# Latest, see: https://mvnrepository.com/artifact/org.slf4j/slf4j-api
+log4jVersion = "2.24.3"
+
+
 [libraries]
 
 # Kotlin
@@ -52,6 +56,12 @@ jacksonDatatypeJsr310 = { group = "com.fasterxml.jackson.datatype", name = "jack
 
 # jjwtJackson = { group = "io.jsonwebtoken", name = "jjwt-jackson", version.ref = "jjwtVersion" }
 
+
+
+slf4jApi = { group = "org.slf4j", name = "slf4j-api", version = "2.0.17" }
+log4jCore = { group = "org.apache.logging.log4j", name = "log4j-core", version.ref = "log4jVersion" }
+log4jSlf4j2Impl = { group = "org.apache.logging.log4j", name = "log4j-slf4j2-impl", version.ref = "log4jVersion" }
+kotlinLogging = { group = "io.github.oshai", name = "kotlin-logging-jvm", version = "7.0.7" }
 
 
 # [bundles] # Only useful for sharing sets of dependencies sbetween (sub)projects

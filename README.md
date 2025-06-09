@@ -7,15 +7,19 @@ Dream stack.
 * Kotlin — Beautiful language that anyone with typed OO experience (Java, C#, C++, modern PHP/Ruby/Python) can learn in a weekend. Lift on Java's ecosystem for heavy-lifting. Better culture than Java wrt type-safety.
 * http4k — The same architectural model as Rails+Rack (Ruby), or Axum+Tower (Rust) or <many other> use, well implemented in as a bunch of libs Kotlin. Very modular. Very pluggable.
 * kotlinx.html — Write HTML templates in Kotlin's DSL syntax, adds type safety where possible.
-* JDBI — Conveniently keep queries in separate SQL files. Does not interfere with SQL code at all (not an ORM or query builder), so 100% "just SQL".
+* JDBI — Conveniently keep queries in separate SQL files. Does not interfere with SQL code at all (not an ORM or query builder), so 100% "just SQL". (Might want to replace this one day with terpal-sql, once it's a bit more mature.)
+
+The idea is to have Supabase with all it's value ready to be used directly from the browser if needed, while being able to start of with a traditional SSR application.
+This because SSR is much cheaper to implement than SPA. SPAs force one to manage state twice and reimplement lots of browser features in JS (back/forward button behaviour, while remembering scroll/form state, etc.).
+
 
 ### Authentication
 
 We use JWTs for authentication. Since this is primarily a server side rendered application, the rotating refresh token scheme is not useful for us.
-Therefor we use long lived JWT access tokens for authentication (a `session_id` does exist, but it is not exposed by the auth service).
+Therefor we use long-lived JWT access tokens for authentication (a `session_id` does exist, but it is not exposed by the auth service).
 These tokens are valid for 100 hours (about half a week) and will be rotated on first use after the first 50 hours of the expiry time have passed.
 
-This requires a the following setting in Supabase's `conifg.toml`:
+This requires the following setting in Supabase's `conifg.toml`:
 
 ```toml
 jwt_expiry = 360000
@@ -31,3 +35,9 @@ jwt_expiry = 360000
 * Full control over the use of db transactions (nesting of transactions is allowed), and no transaction is started automatically per request cycle.
 * 12 factor principles (like: configuration by env vars).
 
+
+### TODO
+
+* complete sign-up/in/out flows
+* include an example of RLS
+* make use of an additional auth property for RLS (like the `org_id`)

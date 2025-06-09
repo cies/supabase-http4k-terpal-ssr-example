@@ -5,7 +5,7 @@ import org.http4k.core.Response
 import org.http4k.core.Status
 
 
-val customErrorPagesFilter = Filter { next ->
+val htmlErrorStyler = Filter { next ->
   { request ->
     val response = next(request)
     when (response.status) {
@@ -14,6 +14,7 @@ val customErrorPagesFilter = Filter { next ->
         .header("Content-Type", "text/html")
 
       // This status is called "UNAUTHORIZED", but is more accurately described by "unauthenticated".
+      // In practice, we often respond with a "redirect to sign-in" instead of this status code.
       Status.UNAUTHORIZED -> Response(Status.UNAUTHORIZED)
         .body("<html><h1>Unauthorized (401)</h1><p>Please login first.</p></html>")
         .header("Content-Type", "text/html")
