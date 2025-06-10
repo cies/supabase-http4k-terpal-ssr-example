@@ -3,11 +3,11 @@ package com.example.handler.auth
 import com.example.Paths
 import com.example.formparser.FormParamDeserializer
 import com.example.handler.redirectAfterFormSubmission
-import com.example.html.signup.SignUpForm
-import com.example.html.signup.signUpPage
+import com.example.html.template.signup.SignUpForm
+import com.example.html.template.signup.signUpPage
 import com.example.lib.supabase.fetchSupabaseTokens
+import com.example.lib.supabase.signUpWithEmail
 import com.example.lib.supabase.toCookies
-import com.example.supabase
 import dev.forkhandles.result4k.Failure
 import dev.forkhandles.result4k.Success
 import io.konform.validation.Invalid
@@ -28,7 +28,7 @@ fun signUpPostHandler(req: Request): Response {
     is Invalid -> return signUpPage(formDto, validationResult)
 
     is Valid<SignUpForm> -> {
-      when (val authResult = supabase.signUpWithEmail(formDto.email!!, formDto.password!!)) {
+      when (val authResult = signUpWithEmail(formDto.email!!, formDto.password!!)) {
         is Failure -> {
           val invalidResult = Invalid.of(
             ValidationPath(listOf(SignUpForm::email.toPathSegment())),

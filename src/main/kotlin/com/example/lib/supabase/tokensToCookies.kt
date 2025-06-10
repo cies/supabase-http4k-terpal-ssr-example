@@ -9,10 +9,10 @@ import org.http4k.core.cookie.cookie
 
 /**
  * We store the JWT access token and the reset token in cookies. This to make server-side rendering possible, while also
- * being fully compatible with Supabase's auth module (in case we want to make use of it's automatically generated
+ * being fully compatible with Supabase's auth module (in case we want to make use of its automatically generated
  * GraphQL, REST or subscriptions API in the future).
  *
- * The down-side is that we loose some of the improved safety w.r.t. session tokens:
+ * The downside is that we lose some of the improved safety wrt session tokens:
  * * We send the refresh token with every request (cannot send a cookie conditionally).
  * * We put very long expiry times on the JWT access token.
  *

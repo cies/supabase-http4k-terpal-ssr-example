@@ -1,6 +1,6 @@
 package com.example.handler.auth
 
-import com.example.html.signout.signedOutPage
+import com.example.html.template.signout.signedOutPage
 import com.example.lib.supabase.clearSupabaseAuthCookies
 import org.http4k.core.Request
 import org.http4k.core.Response

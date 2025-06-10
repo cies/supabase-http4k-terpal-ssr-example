@@ -3,10 +3,9 @@ package com.example.filter
 import com.example.SUPABASE_POSTGRES_PASSWORD
 import com.example.SUPABASE_POSTGRES_URL
 import com.example.SUPABASE_POSTGRES_USERNAME
+import com.example.db.renderSetSupabaseAuthToAuthenticatedUserQuery
 import com.example.db.setSupabaseAuthToAnon
 import com.example.db.setSupabaseAuthToAuthenticatedUser
-import com.example.db.setSupabaseAuthToPostgreRole
-import com.example.db.setSupabaseAuthToServiceRole
 import com.example.jwtContextKey
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.JsonInclude
@@ -20,7 +19,6 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.http4k.core.Filter
-import org.http4k.core.Request
 import org.http4k.core.with
 import org.http4k.lens.RequestLens
 import org.jdbi.v3.core.Handle
@@ -89,19 +87,23 @@ val lenientMapper: ObjectMapper = jacksonObjectMapper()
  * We prefer the programmer makes explicit transactions where they are needed (transactions can be nested),
  * instead of implicitly wrapping everything in transactions.
  */
-fun authenticatedJdbiInitializer(dbContextKey: RequestLens<Handle>) = Filter { next ->
+fun authenticatedJdbiInitializer(dbContextKey: RequestLens<Handle>, authedQueryCache: RequestLens<String>) = Filter { next ->
   {
     // Open a Jdbi [Handle]: a db connection gets taken from the pool.
     jdbi.open().use { db ->
 
       // Get auth details (JWT) from the request context and set them auth details on the Jdbi [Handle].
-      db.setSupabaseAuthToAuthenticatedUser(jwtContextKey(it))
+      val authedQueryForCache = renderSetSupabaseAuthToAuthenticatedUserQuery(jwtContextKey(it))
+      db.setSupabaseAuthToAuthenticatedUser(authedQueryForCache)
 
       // We now move on to the next layer (`Filter` or `Handler`) up in the stack, while passing Jdbi [Handle] along in
       // the request context.
-      // We do not return the response immediately, because we want to reset the db connection (so it does not contain
+      // We do not return the response immediately because we want to reset the db connection (so it does not contain
       // auth details before it is returned to the pool).
-      val response = next(it.with(dbContextKey of db))
+      val response = next(
+        it.with(dbContextKey of db)
+          .with(authedQueryCache of authedQueryForCache)
+      )
 
       // Reset the auth details on the db connection.
       db.setSupabaseAuthToAnon()
@@ -112,15 +114,4 @@ fun authenticatedJdbiInitializer(dbContextKey: RequestLens<Handle>) = Filter { n
       // When this scope is closed, the Jdbi Handle gets closed: the db connection is returned to the pool.
     }
   }
-}
-
-
-fun <R> Handle.withServiceRole(req: Request, block: (Handle) -> R): R {
-  this.setSupabaseAuthToPostgreRole()
-
-  val blockResult = block(this)
-
-  // Get auth details from the request context.
-  this.setSupabaseAuthToAuthenticatedUser(jwtContextKey(req))
-  return blockResult
 }

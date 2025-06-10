@@ -1,8 +1,8 @@
-package com.example.html.signout
+package com.example.html.template.signout
 
 import com.example.Paths
-import com.example.html.supertemplate.htmlPage
-import com.example.html.supertemplate.notSignedIn
+import com.example.html.layout.htmlPage
+import com.example.html.layout.notSignedIn
 import kotlinx.html.*
 import org.http4k.core.Response
 

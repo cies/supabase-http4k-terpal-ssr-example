@@ -1,27 +1,22 @@
-package com.example.html.signin
+package com.example.html.template.signup
 
 import io.konform.validation.Validation
 import io.konform.validation.ValidationResult
 import io.konform.validation.constraints.minLength
 import io.konform.validation.constraints.pattern
 
-data class SignInForm(
-  val email: String?,
-  val password: String?,
-  val rememberMe: Boolean = true,
-  val target: String? = null
-) {
+data class SignUpForm(val email: String?, val password: String?) {
 
   companion object {
-    fun empty() = SignInForm(null, null)
+    fun empty() = SignUpForm(null, null)
   }
 
-  fun validate(): ValidationResult<SignInForm> {
+  fun validate(): ValidationResult<SignUpForm> {
     return Validation {
-      SignInForm::email required {
+      SignUpForm::email required {
         pattern(".+@.+\\..+") hint "Please provide a valid email address"
       }
-      SignInForm::password required {
+      SignUpForm::password required {
         minLength(8) hint "Password must be at least 8 characters long"
         pattern(".+[a-z]+.+") hint "Password must contain at least one lowercase letter"
         pattern(".+[A-Z]+.+") hint "Password must contain at least one uppercase letter"
@@ -30,3 +25,4 @@ data class SignInForm(
     }(this)
   }
 }
+

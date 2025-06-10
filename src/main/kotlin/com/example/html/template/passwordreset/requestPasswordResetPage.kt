@@ -1,11 +1,11 @@
-package com.example.html.passwordreset
+package com.example.html.template.passwordreset
 
 import com.example.Paths
-import com.example.html.signin.SignInForm
-import com.example.html.subtemplate.validationErrorBlock
-import com.example.html.subtemplate.validationInput
-import com.example.html.supertemplate.htmlPage
-import com.example.html.supertemplate.notSignedIn
+import com.example.html.template.signin.SignInForm
+import com.example.html.block.validationErrorBox
+import com.example.html.block.validationInput
+import com.example.html.layout.htmlPage
+import com.example.html.layout.notSignedIn
 import com.example.html.toNameString
 import io.konform.validation.ValidationResult
 import kotlinx.html.*
@@ -24,7 +24,7 @@ fun requestPasswordResetPage(formContent: RequestPasswordResetForm, validatedFor
         +"The link will be send by email and is only valid for a 30 minutes."
         +"It will take you to a form by which you can set a new password for your account."
       }
-      validationErrorBlock(validatedForm)
+      validationErrorBox(validatedForm)
       form(Paths.requestPasswordReset.path(), method = FormMethod.post) {
         p {
           label {

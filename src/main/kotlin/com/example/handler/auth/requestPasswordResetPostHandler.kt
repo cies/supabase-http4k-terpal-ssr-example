@@ -2,10 +2,10 @@ package com.example.handler.auth
 
 import com.example.Paths
 import com.example.formparser.FormParamDeserializer
-import com.example.html.passwordreset.RequestPasswordResetForm
-import com.example.html.passwordreset.passwordResetLinkMaybeSentPage
-import com.example.html.passwordreset.requestPasswordResetPage
-import com.example.supabase
+import com.example.html.template.passwordreset.RequestPasswordResetForm
+import com.example.html.template.passwordreset.passwordResetLinkMaybeSentPage
+import com.example.html.template.passwordreset.requestPasswordResetPage
+import com.example.lib.supabase.supabaseClient
 import io.github.jan.supabase.auth.auth
 import io.konform.validation.Invalid
 import io.konform.validation.Valid
@@ -26,7 +26,7 @@ fun requestPasswordResetPostHandler(req: Request): Response {
     is Valid<RequestPasswordResetForm> -> {
       val email = validationResult.value.email!!
       runBlocking {
-        supabase.supabaseClient.auth.resetPasswordForEmail(email, redirectUrl = Paths.setNewPassword.fullUrl(req))
+        supabaseClient.auth.resetPasswordForEmail(email, redirectUrl = Paths.setNewPassword.fullUrl(req))
       }
       passwordResetLinkMaybeSentPage(email)
     }

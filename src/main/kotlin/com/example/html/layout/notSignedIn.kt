@@ -1,4 +1,4 @@
-package com.example.html.supertemplate
+package com.example.html.layout
 
 import kotlinx.html.HTML
 import kotlinx.html.HtmlTagMarker
@@ -13,6 +13,7 @@ import kotlinx.html.main
 import kotlinx.html.meta
 import kotlinx.html.nav
 import kotlinx.html.title
+
 
 @HtmlTagMarker
 inline fun HTML.notSignedIn(title: String, crossinline subtemplate: MAIN.() -> Unit = {}) {

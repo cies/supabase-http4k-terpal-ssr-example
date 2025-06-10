@@ -26,6 +26,7 @@ import org.http4k.core.cookie.cookies
 import org.http4k.core.with
 import org.http4k.lens.RequestLens
 
+
 private val log = KotlinLogging.logger {}
 
 private val verifier: JWTVerifier = JWT.require(Algorithm.HMAC256(SUPABASE_JWT_SECRET))
@@ -43,7 +44,7 @@ private val verifier: JWTVerifier = JWT.require(Algorithm.HMAC256(SUPABASE_JWT_S
 fun cookieBasedJwtAuthenticator(jwtContextKey: RequestLens<DecodedJWT>, userUuidContextKey: RequestLens<UUID>) =
   Filter { next ->
     {
-      val jwtParseResult = it.accessTokenFromCookie()?.let(::parseJwtAccessToken)
+      val jwtParseResult = it.accessTokenFromCookie()?.let(::validatedJwtAndAuthDetailsFrom)
       authenticateOrRedirectToSignIn(jwtParseResult, jwtContextKey, userUuidContextKey, next, it)
     }
   }
@@ -93,7 +94,7 @@ private fun Request.refreshTokenFromCookie(): String? = this.tokenFromCookieWith
 private fun Request.tokenFromCookieWithName(cookieName: String): String? =
   this.cookies().firstOrNull { cookie -> cookie.name == cookieName }?.value
 
-private fun parseJwtAccessToken(jwtAccessToken: String): JwtParseResult? {
+private fun validatedJwtAndAuthDetailsFrom(jwtAccessToken: String): JwtParseResult? {
   val decodedJwt = try {
     verifier.verify(jwtAccessToken)
   } catch (_: JWTVerificationException) {

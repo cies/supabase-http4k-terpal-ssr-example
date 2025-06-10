@@ -1,4 +1,4 @@
-package com.example.html.error
+package com.example.html.template.error
 
 import java.io.PrintWriter
 import java.io.StringWriter

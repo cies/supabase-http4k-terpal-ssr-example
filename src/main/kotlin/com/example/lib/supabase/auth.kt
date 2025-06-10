@@ -1,14 +1,16 @@
 package com.example.lib.supabase
 
 import com.example.SUPABASE_BASEURL
+import com.example.SUPABASE_SERVICE_ROLE_KEY
 import dev.forkhandles.result4k.Failure
 import dev.forkhandles.result4k.Result
 import dev.forkhandles.result4k.Success
-import io.github.jan.supabase.SupabaseClient
+import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.exception.AuthRestException
 import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.auth.user.UserInfo
+import io.github.jan.supabase.createSupabaseClient
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -66,24 +68,30 @@ data class TokenResponseError(
 )
 val tokenResponseErrorLens = Body.auto<TokenResponseError>().toLens() // only need one
 
-class SupabaseAuth(val supabaseClient: SupabaseClient) {
-
-  fun signUpWithEmail(emailAddress: String, plainPassword: String): Result<UserInfo?, SignUpError> {
-    var user: UserInfo? = null
-    try {
-      runBlocking {
-        user = supabaseClient.auth.signUpWith(Email) {
-          email = emailAddress
-          password = plainPassword
-        }
-      }
-    } catch (e: AuthRestException) {
-      if (e.message?.contains("user_already_exists") == true) return Failure(SignUpError.ALREADY_EXISTS)
-      return Failure(SignUpError.UNKNOWN_ERROR)
-    }
-    return Success(user)
+val supabaseClient = createSupabaseClient(SUPABASE_BASEURL, SUPABASE_SERVICE_ROLE_KEY) {
+  install(Auth) {
+    // Set these because we do not use this Supabase Client's sessions
+    autoSaveToStorage = false
+    autoLoadFromStorage = false
+    alwaysAutoRefresh = false // probably needed as well
   }
 }
+
+fun signUpWithEmail(emailAddress: String, plainPassword: String): Result<UserInfo?, SignUpError> {
+  val user: UserInfo? = try {
+    runBlocking {
+      supabaseClient.auth.signUpWith(Email) {
+        email = emailAddress
+        password = plainPassword
+      }
+    }
+  } catch (e: AuthRestException) {
+    if (e.message?.contains("user_already_exists") == true) return Failure(SignUpError.ALREADY_EXISTS)
+    return Failure(SignUpError.UNKNOWN_ERROR)
+  }
+  return Success(user)
+}
+
 
 enum class SignUpError {
   ALREADY_EXISTS,

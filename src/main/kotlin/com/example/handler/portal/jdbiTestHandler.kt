@@ -1,8 +1,8 @@
 package com.example.handler.portal
 
 import com.example.db.OrganizationDao
+import com.example.db.withServiceRoleDANGER
 import com.example.dbContextKey
-import com.example.filter.withServiceRole
 import org.http4k.core.Request
 import org.http4k.core.Response
 import org.http4k.core.Status.Companion.OK
@@ -14,7 +14,7 @@ fun jdbiTestHandler(req: Request): Response {
 
     val firstWithout = orgDao.listOrganizations().joinToString(", ") { it.name }
 
-    val withServiceRole = dbtx.withServiceRole(req) {
+    val withServiceRole = dbtx.withServiceRoleDANGER(req) {
       orgDao.listOrganizations().joinToString(", ") { it.name }
     }
 

@@ -8,12 +8,12 @@ import com.example.handler.auth.signInPostHandler
 import com.example.handler.auth.signOutPostHandler
 import com.example.handler.portal.jdbiTestHandler
 import com.example.handler.portal.reseedDbHandler
-import com.example.html.passwordreset.RequestPasswordResetForm
-import com.example.html.passwordreset.requestPasswordResetPage
-import com.example.html.signup.SignUpForm
-import com.example.html.signup.signUpPage
-import com.example.html.signin.SignInForm
-import com.example.html.signin.signInPage
+import com.example.html.template.passwordreset.RequestPasswordResetForm
+import com.example.html.template.passwordreset.requestPasswordResetPage
+import com.example.html.template.signup.SignUpForm
+import com.example.html.template.signup.signUpPage
+import com.example.html.template.signin.SignInForm
+import com.example.html.template.signin.signInPage
 import io.konform.validation.Valid
 import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
@@ -32,6 +32,9 @@ val portalRouter = routes(
 )
 
 val mainRouter = routes(
+
+  // ### Related to sign up/in/out
+
   Paths.ping.template() bind GET to { Response(OK).body("pong") },
   Paths.signUp.template() bind GET to { signUpPage(SignUpForm.empty(), Valid(SignUpForm.empty())) },
   Paths.signUp.template() bind POST to ::signUpPostHandler,
@@ -44,17 +47,21 @@ val mainRouter = routes(
   Paths.requestPasswordReset.template() bind GET to { req ->
     requestPasswordResetPage(RequestPasswordResetForm.empty(), Valid(RequestPasswordResetForm.empty()))
   },
-  Paths.requestPasswordReset.template() bind POST to :: requestPasswordResetPostHandler,
+  Paths.requestPasswordReset.template() bind POST to ::requestPasswordResetPostHandler,
   //  Paths.passwordResetVerification.template() bind GET to { req ->
   //    resetPasswordPage(ResetPasswordForm.empty(), Valid(ResetPasswordForm.empty()))
   //  },
   //  Paths.passwordResetVerification.template() bind POST to { req -> resetPasswordPostHandler(req) },
 
-  Paths.portal.template() bind
-    cookieBasedJwtAuthenticator(jwtContextKey, userUuidContextKey)
-      .then(authenticatedJdbiInitializer(dbContextKey))
-//      .then(addSupabaseToContext(supabaseContextKey)) // not yet needed, for now we use a global
-      .then(portalRouter),
+
+  // ### The portal sub-router (with its own additional filter stack)
+
+  Paths.portal.template() bind cookieBasedJwtAuthenticator(jwtContextKey, userUuidContextKey)
+    .then(authenticatedJdbiInitializer(dbContextKey, authedQueryCacheContextKey))
+    .then(portalRouter),
+
+
+  // ### Static routing
 
   Paths.faviconIco.template() bind GET to {
     Response(OK).body(Classpath("static").load("/favicon.ico")!!.openStream())

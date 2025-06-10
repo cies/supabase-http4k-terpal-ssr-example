@@ -2,6 +2,8 @@ package com.example.db
 
 import org.jdbi.v3.sqlobject.statement.SqlQuery
 
+
+/** This to demo the query "in annotation" style that Jdbi supports. */
 interface RoleDao {
 
   // `current_Setting('key', true)` is is more robust (`true` prevents errors, ensures null is returns if key not set).

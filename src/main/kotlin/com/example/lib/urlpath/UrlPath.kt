@@ -5,18 +5,13 @@ import org.http4k.core.Request
 import org.http4k.core.UriTemplate
 
 data class UrlPath(private val template: UriTemplate, private val basePath: UrlPath? = null) {
-  constructor(templateString: String) : this(UriTemplate.Companion.from(templateString)) {
-    require(templateString.isNotEmpty()) {
-      "A path cannot be empty"
-    }
+  constructor(templateString: String) : this(UriTemplate.from(templateString)) {
+    require(templateString.isNotEmpty()) { "A path cannot be empty" }
   }
 
-  constructor(basePath: UrlPath, templateString: String) : this(UriTemplate.Companion.from(templateString), basePath) {
-    require(templateString.isNotEmpty()) {
-      "A path cannot be empty"
-    }
+  constructor(basePath: UrlPath, templateString: String) : this(UriTemplate.from(templateString), basePath) {
+    require(templateString.isNotEmpty()) { "A path cannot be empty" }
   }
-
 
   fun template(): String = template.toString()
 

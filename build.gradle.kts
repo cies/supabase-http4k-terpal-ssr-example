@@ -13,9 +13,6 @@ buildscript {
     mavenCentral()
     gradlePluginPortal()
   }
-
-  dependencies {
-  }
 }
 
 kotlin {
@@ -25,7 +22,7 @@ kotlin {
 }
 
 application {
-  mainClass = "com.example.ApplicationKt"
+  mainClass = "com.example.appKt"
 }
 
 repositories {

@@ -6,6 +6,8 @@ import org.jdbi.v3.sqlobject.locator.UseClasspathSqlLocator
 import org.jdbi.v3.sqlobject.statement.SqlQuery
 import org.jdbi.v3.sqlobject.statement.SqlUpdate
 
+
+/** This to demo the query "in separate file" style that Jdbi supports. */
 @UseClasspathSqlLocator
 interface OrganizationDao {
 

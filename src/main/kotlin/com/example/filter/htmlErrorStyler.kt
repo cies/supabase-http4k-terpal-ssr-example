@@ -26,7 +26,7 @@ val htmlErrorStyler = Filter { next ->
         .body("<html><h1>Forbidden (403)</h1><p>Insufficient privileges.</p></html>")
         .header("Content-Type", "text/html")
 
-      // This get thrown when the path matches but the HTTP verb does not.
+      // This gets returned when the path matches, but the HTTP verb does not.
       Status.METHOD_NOT_ALLOWED -> {
         log.warn { "Call to ${req.uri} with HTTP verb ${req.method} could not be routed (405)" }
         Response(Status.METHOD_NOT_ALLOWED)

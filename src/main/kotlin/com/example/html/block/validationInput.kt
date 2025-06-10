@@ -1,4 +1,4 @@
-package com.example.html.subtemplate
+package com.example.html.block
 
 import com.example.html.hasValidationError
 import io.konform.validation.ValidationResult

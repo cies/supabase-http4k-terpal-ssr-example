@@ -1,10 +1,10 @@
-package com.example.html.signup
+package com.example.html.template.signup
 
 import com.example.Paths
-import com.example.html.subtemplate.validationErrorBlock
-import com.example.html.subtemplate.validationInput
-import com.example.html.supertemplate.htmlPage
-import com.example.html.supertemplate.notSignedIn
+import com.example.html.block.validationErrorBox
+import com.example.html.block.validationInput
+import com.example.html.layout.htmlPage
+import com.example.html.layout.notSignedIn
 import com.example.html.toNameString
 import io.konform.validation.ValidationResult
 import kotlinx.html.*
@@ -22,7 +22,7 @@ fun signUpPage(formContent: SignUpForm, validatedForm: ValidationResult<SignUpFo
       p {
         +"After submitting the form we will send a verification email to the address to ensure it belongs to you."
       }
-      validationErrorBlock(validatedForm)
+      validationErrorBox(validatedForm)
       form(Paths.signUp.path(), method = FormMethod.post) {
         p {
           label {

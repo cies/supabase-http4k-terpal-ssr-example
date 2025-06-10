@@ -1,4 +1,4 @@
-package com.example.html.passwordreset
+package com.example.html.template.passwordreset
 
 import io.konform.validation.Validation
 import io.konform.validation.ValidationResult

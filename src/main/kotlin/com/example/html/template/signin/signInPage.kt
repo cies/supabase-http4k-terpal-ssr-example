@@ -1,10 +1,10 @@
-package com.example.html.signin
+package com.example.html.template.signin
 
 import com.example.Paths
-import com.example.html.subtemplate.validationErrorBlock
-import com.example.html.subtemplate.validationInput
-import com.example.html.supertemplate.htmlPage
-import com.example.html.supertemplate.notSignedIn
+import com.example.html.block.validationErrorBox
+import com.example.html.block.validationInput
+import com.example.html.layout.htmlPage
+import com.example.html.layout.notSignedIn
 import com.example.html.toNameString
 import io.konform.validation.ValidationResult
 import kotlinx.html.*
@@ -16,7 +16,7 @@ fun signInPage(formContent: SignInForm, validatedForm: ValidationResult<SignInFo
       h1 {
         +"Sign in to the portal"
       }
-      validationErrorBlock(validatedForm)
+      validationErrorBox(validatedForm)
       form(Paths.signIn.path(), method = FormMethod.post) {
         input(InputType.hidden) {
           name = toNameString(SignInForm::target)

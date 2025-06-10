@@ -3,8 +3,8 @@ package com.example.handler.auth
 import com.example.Paths
 import com.example.formparser.FormParamDeserializer
 import com.example.handler.redirectAfterFormSubmission
-import com.example.html.signin.SignInForm
-import com.example.html.signin.signInPage
+import com.example.html.template.signin.SignInForm
+import com.example.html.template.signin.signInPage
 import com.example.lib.supabase.fetchSupabaseTokens
 import com.example.lib.supabase.toCookies
 import dev.forkhandles.result4k.Failure

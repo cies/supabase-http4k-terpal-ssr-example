@@ -1,7 +1,7 @@
-package com.example.html.passwordreset
+package com.example.html.template.passwordreset
 
-import com.example.html.supertemplate.htmlPage
-import com.example.html.supertemplate.notSignedIn
+import com.example.html.layout.htmlPage
+import com.example.html.layout.notSignedIn
 import kotlinx.html.*
 import org.http4k.core.Response
 
