@@ -1,7 +1,10 @@
 package com.example.db
 
+import java.time.Instant
+import java.util.UUID
 import org.jdbi.v3.sqlobject.locator.UseClasspathSqlLocator
 import org.jdbi.v3.sqlobject.statement.SqlQuery
+import org.jdbi.v3.sqlobject.statement.SqlUpdate
 
 @UseClasspathSqlLocator
 interface OrganizationDao {
@@ -11,7 +14,16 @@ interface OrganizationDao {
 
   @SqlQuery
   fun fetchOrganizationById(id: Long): Organization
+
+  @SqlUpdate
+  fun runSeed()
 }
 
 
-data class Organization(val id: Long, val name: String)
+data class Organization(
+  val organizationId: Long,
+  val name: String,
+  val managerUserId: UUID,
+  val createdAt: Instant,
+  val updatedAt: Instant
+)

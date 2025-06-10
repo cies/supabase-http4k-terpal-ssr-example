@@ -28,7 +28,7 @@ import org.http4k.lens.RequestLens
 
 private val log = KotlinLogging.logger {}
 
-val verifier: JWTVerifier = JWT.require(Algorithm.HMAC256(SUPABASE_JWT_SECRET))
+private val verifier: JWTVerifier = JWT.require(Algorithm.HMAC256(SUPABASE_JWT_SECRET))
   .withAudience("authenticated") // or "anon", "service_role", etc. based on your usage
   .build()
 
@@ -40,12 +40,13 @@ val verifier: JWTVerifier = JWT.require(Algorithm.HMAC256(SUPABASE_JWT_SECRET))
  *   - Adds the JWT data to the request context with the `RequestKey` mechanism.
  *   - Refreshes the JWT access token with the refresh token, by setting cookies on the response, when JWT gets old.
  */
-fun jwtByCookiesAuthenticator(jwtContextKey: RequestLens<DecodedJWT>, userUuidContextKey: RequestLens<UUID>) = Filter { next ->
-  {
-    val jwtParseResult = it.accessTokenFromCookie()?.let(::parseJwtAccessToken)
-    authenticateOrRedirectToSignIn(jwtParseResult, jwtContextKey, userUuidContextKey, next, it)
+fun cookieBasedJwtAuthenticator(jwtContextKey: RequestLens<DecodedJWT>, userUuidContextKey: RequestLens<UUID>) =
+  Filter { next ->
+    {
+      val jwtParseResult = it.accessTokenFromCookie()?.let(::parseJwtAccessToken)
+      authenticateOrRedirectToSignIn(jwtParseResult, jwtContextKey, userUuidContextKey, next, it)
+    }
   }
-}
 
 private fun authenticateOrRedirectToSignIn(
   jwtParseResult: JwtParseResult?,
@@ -56,7 +57,7 @@ private fun authenticateOrRedirectToSignIn(
 ): Response {
   if (jwtParseResult == null)
     return redirectToSignIn(SignInReason.InvalidAuthToken, request.uri.path)
-  if (jwtParseResult.expiresAt.isAfter(Instant.now()))
+  if (jwtParseResult.expiresAt.isBefore(Instant.now()))
     return redirectToSignIn(SignInReason.SessionExpired, request.uri.path)
 
   // We have a valid JWT, so move on to the next layer (`Filter` or `Handler`) up in the stack, while passing data from
@@ -80,14 +81,14 @@ private fun authenticateOrRedirectToSignIn(
     }
 
     is Failure -> {
-      val (statusCode, message) = supabaseAuthResult.reason
-      log.warn { "Could not refresh the access token ($statusCode - $message)" }
+      val (statusCode, errorCode, _) = supabaseAuthResult.reason
+      log.warn { "Could not refresh the access token $errorCode ($statusCode)" }
       return response // Could not refresh the JWT access token: no problem until the JWT access token expires.
     }
   }
 }
 
-private fun Request.accessTokenFromCookie(): String? = this.tokenFromCookieWithName("sb-refresh-token")
+private fun Request.accessTokenFromCookie(): String? = this.tokenFromCookieWithName("sb-access-token")
 private fun Request.refreshTokenFromCookie(): String? = this.tokenFromCookieWithName("sb-refresh-token")
 private fun Request.tokenFromCookieWithName(cookieName: String): String? =
   this.cookies().firstOrNull { cookie -> cookie.name == cookieName }?.value

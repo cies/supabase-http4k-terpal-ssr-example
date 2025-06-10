@@ -1,1 +1,1 @@
-SELECT * FROM organization WHERE id = :id;
+SELECT * FROM organization WHERE organization_id = :id;

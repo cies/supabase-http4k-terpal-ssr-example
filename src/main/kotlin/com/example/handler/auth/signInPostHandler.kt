@@ -1,4 +1,4 @@
-package com.example.handler.registration
+package com.example.handler.auth
 
 import com.example.Paths
 import com.example.formparser.FormParamDeserializer
@@ -30,14 +30,14 @@ fun signInPostHandler(req: Request): Response {
         is Success -> {
           val (accessTokenCookie, refreshTokenCookie) = signInResult.value.toCookies()
           val target = formDto.target ?: Paths.jdbi.absolutePath()
-          return redirectAfterFormSubmission(Paths.jdbi.path()).cookie(accessTokenCookie).cookie(refreshTokenCookie)
+          return redirectAfterFormSubmission(target).cookie(accessTokenCookie).cookie(refreshTokenCookie)
         }
 
         is Failure -> {
           val invalidResult = Invalid.of(
             ValidationPath(listOf()),
             // TODO: make this more generic
-            "${signInResult.reason.second} (${signInResult.reason.first})"
+            signInResult.reason.message
           )
           return signInPage(formDto, invalidResult)
         }

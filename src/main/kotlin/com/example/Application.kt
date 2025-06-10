@@ -26,6 +26,7 @@ val registry = SimpleMeterRegistry()
 val jwtContextKey = RequestKey.required<DecodedJWT>("jwt")
 val userUuidContextKey = RequestKey.required<UUID>("userUuid")
 val dbContextKey = RequestKey.required<Handle>("db")
+val renderedSetSupabaseAuthenticatedUserQueryContextKey = RequestKey.required<Handle>("user_query")
 
 val env = dotenv()
 val SUPABASE_JWT_SECRET = env["SUPABASE_JWT_SECRET"] ?: throw NoSuchFieldException()

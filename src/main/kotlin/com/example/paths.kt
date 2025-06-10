@@ -3,6 +3,7 @@ package com.example
 import com.example.lib.urlpath.UrlPath
 
 data object Paths {
+
   // Static endpoints
   val faviconIco =
     UrlPath("/favicon.ico")
@@ -17,6 +18,14 @@ data object Paths {
     UrlPath("/sign-up")
   val signIn =
     UrlPath("/sign-in")
+  val signOut =
+    UrlPath("/sign-out")
+  val requestPasswordReset =
+    UrlPath("/reset-password")
+  val passwordResetVerification =
+    UrlPath("/reset-password-verification/{token}")
+  val setNewPassword =
+    UrlPath("/set-new-password")
 
   val portal =
     UrlPath("/portal")
@@ -24,5 +33,7 @@ data object Paths {
     UrlPath(portal, "/metrics")
   val jdbi =
     UrlPath(portal, "/jdbi")
+  val reseed =
+    UrlPath(portal, "/reseed")
 }
 

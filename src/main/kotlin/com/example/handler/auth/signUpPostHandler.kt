@@ -1,10 +1,10 @@
-package com.example.handler.registration
+package com.example.handler.auth
 
 import com.example.Paths
 import com.example.formparser.FormParamDeserializer
 import com.example.handler.redirectAfterFormSubmission
-import com.example.html.registration.RegistrationForm
-import com.example.html.registration.registrationPage
+import com.example.html.signup.SignUpForm
+import com.example.html.signup.signUpPage
 import com.example.lib.supabase.fetchSupabaseTokens
 import com.example.lib.supabase.toCookies
 import com.example.supabase
@@ -20,36 +20,35 @@ import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.body.form
 import org.http4k.core.cookie.cookie
 
-fun registerPostHandler(req: Request): Response {
-  val formDto = FormParamDeserializer.deserialize(req.form(), RegistrationForm::class)
+fun signUpPostHandler(req: Request): Response {
+  val formDto = FormParamDeserializer.deserialize(req.form(), SignUpForm::class)
     ?: return Response(BAD_REQUEST)
 
   when (val validationResult = formDto.validate()) {
-    is Invalid -> return registrationPage(formDto, validationResult)
+    is Invalid -> return signUpPage(formDto, validationResult)
 
-    is Valid<RegistrationForm> -> {
+    is Valid<SignUpForm> -> {
       when (val authResult = supabase.signUpWithEmail(formDto.email!!, formDto.password!!)) {
         is Failure -> {
           val invalidResult = Invalid.of(
-            ValidationPath(listOf(RegistrationForm::email.toPathSegment())),
+            ValidationPath(listOf(SignUpForm::email.toPathSegment())),
             authResult.reason.toString()
           )
-          return registrationPage(formDto, invalidResult)
+          return signUpPage(formDto, invalidResult)
         }
 
         is Success -> {
           when (val signInResult = fetchSupabaseTokens(formDto.email, formDto.password)) {
             is Success -> {
               val (accessTokenCookie, refreshTokenCookie) = signInResult.value.toCookies()
-              return redirectAfterFormSubmission(Paths.jdbi.path()).cookie(accessTokenCookie).cookie(refreshTokenCookie)
+              return redirectAfterFormSubmission(Paths.jdbi.absolutePath())
+                .cookie(accessTokenCookie)
+                .cookie(refreshTokenCookie)
             }
 
             is Failure -> {
-              val invalidResult = Invalid.of(
-                ValidationPath(listOf()),
-                "${signInResult.reason.second} (${signInResult.reason.first})"
-              )
-              return registrationPage(formDto, invalidResult)
+              val invalidResult = Invalid.of(ValidationPath(listOf()), signInResult.reason.message)
+              return signUpPage(formDto, invalidResult)
             }
           }
         }

@@ -1,4 +1,4 @@
-package com.example.html.registration
+package com.example.html.signup
 
 import com.example.Paths
 import com.example.html.subtemplate.validationErrorBlock
@@ -10,11 +10,11 @@ import io.konform.validation.ValidationResult
 import kotlinx.html.*
 import org.http4k.core.Response
 
-fun registrationPage(formContent: RegistrationForm, validatedForm: ValidationResult<RegistrationForm>): Response {
+fun signUpPage(formContent: SignUpForm, validatedForm: ValidationResult<SignUpForm>): Response {
   return htmlPage {
     notSignedIn("Sign up") {
       h1 {
-        +"Register an account"
+        +"Sign-up for an account"
       }
       p {
         +"Fill in your email address and the password you like to use for this service."
@@ -27,7 +27,7 @@ fun registrationPage(formContent: RegistrationForm, validatedForm: ValidationRes
         p {
           label {
             +"Email address"
-            validationInput(toNameString(RegistrationForm::email), InputType.email, validatedForm) {
+            validationInput(toNameString(SignUpForm::email), InputType.email, validatedForm) {
               value = formContent.email ?: ""
             }
           }
@@ -35,13 +35,13 @@ fun registrationPage(formContent: RegistrationForm, validatedForm: ValidationRes
         p {
           label {
             +"Password"
-            validationInput(toNameString(RegistrationForm::password), InputType.password, validatedForm) {
+            validationInput(toNameString(SignUpForm::password), InputType.password, validatedForm) {
               value = "" // Do not put a password in the response
             }
           }
         }
         button(type = ButtonType.submit) {
-          +"Register"
+          +"Sign me up"
         }
       }
     }

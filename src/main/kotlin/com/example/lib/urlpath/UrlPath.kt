@@ -22,6 +22,7 @@ data class UrlPath(private val template: UriTemplate, private val basePath: UrlP
 
   fun path(parameters: Map<String, String> = mapOf()): String = "/" + template.generate(parameters)
 
+  // TODO: rename this to path(), and path() to pathSegment()
   fun absolutePath(parameters: Map<String, String> = mapOf()): String {
     val segments = mutableListOf(template)
     var currentBasePath = basePath

@@ -12,9 +12,9 @@ import org.http4k.core.Response
 
 fun signInPage(formContent: SignInForm, validatedForm: ValidationResult<SignInForm>): Response {
   return htmlPage {
-    notSignedIn("Sign up") {
+    notSignedIn("Sign in") {
       h1 {
-        +"Sign in"
+        +"Sign in to the portal"
       }
       validationErrorBlock(validatedForm)
       form(Paths.signIn.path(), method = FormMethod.post) {
@@ -48,8 +48,12 @@ fun signInPage(formContent: SignInForm, validatedForm: ValidationResult<SignInFo
           }
         }
         button(type = ButtonType.submit) {
-          +"Register"
+          +"Sign in"
         }
+      }
+      a {
+        href = Paths.requestPasswordReset.absolutePath()
+        +"Forgot password"
       }
     }
   }
