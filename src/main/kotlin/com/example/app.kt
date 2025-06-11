@@ -3,6 +3,7 @@ package com.example
 import com.auth0.jwt.interfaces.DecodedJWT
 import com.example.filter.htmlErrorStyler
 import com.example.html.template.error.handleException
+import com.squareup.moshi.Moshi
 import io.github.cdimascio.dotenv.dotenv
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import java.util.UUID
@@ -29,6 +30,24 @@ val jwtContextKey = RequestKey.required<DecodedJWT>("jwt")
 val userUuidContextKey = RequestKey.required<UUID>("userUuid")
 val dbContextKey = RequestKey.required<Handle>("db")
 val authedQueryCacheContextKey = RequestKey.required<String>("authedQueryCache")
+
+val moshi = Moshi.Builder().build()
+
+//@KotshiJsonAdapterFactory
+//private object ExampleJsonAdapterFactory : JsonAdapter.Factory by
+//    KotshiExampleJsonAdapterFactory // this class will be generated during compile
+//
+//val moshi = ConfigurableMoshi(
+//  Moshi.Builder()
+//    .add(ExampleJsonAdapterFactory) // inject kotshi here
+//    .addLast(EventAdapter)
+//    .addLast(ThrowableAdapter)
+//    .addLast(ListAdapter)
+//    .addLast(MapAdapter)
+//    .asConfigurable()
+//    .withStandardMappings()
+//    .done()
+//)
 
 /** A micrometer registry used mostly for testing - substitute the correct implementation. */
 val registry = SimpleMeterRegistry()

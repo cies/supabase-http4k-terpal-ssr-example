@@ -7,15 +7,6 @@ import com.example.db.renderSetSupabaseAuthToAuthenticatedUserQuery
 import com.example.db.setSupabaseAuthToAnon
 import com.example.db.setSupabaseAuthToAuthenticatedUser
 import com.example.jwtContextKey
-import com.fasterxml.jackson.annotation.JsonAutoDetect
-import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.annotation.PropertyAccessor
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.KotlinFeature
-import com.fasterxml.jackson.module.kotlin.KotlinModule.Builder
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.http4k.core.Filter
@@ -50,28 +41,6 @@ var jdbi: Jdbi = Jdbi.create(dataSource)
   .installPlugin(KotlinSqlObjectPlugin())
   .installPlugin(PostgresPlugin())
 
-// Ignore JSON fields that are not known for us, e.g. when a third party adds fields that we haven't specified in DTO's yet
-
-val lenientMapper: ObjectMapper = jacksonObjectMapper()
-  .setSerializationInclusion(JsonInclude.Include.USE_DEFAULTS)
-  // With the following two properties only fields are serialized, getters are ignored
-  .setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE)
-  .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
-  // Fields that are null are by default not serialized
-  .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-  .registerModule(JavaTimeModule())
-  // This was needed to be able to derive null for an enum field from an empty string value.
-  .enable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL)
-  // If a third party adds more fields than our DTO's have, it should not throw an error
-  .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-  .registerModule(
-    Builder()
-      .configure(KotlinFeature.NullToEmptyCollection, true)
-      .configure(KotlinFeature.NullToEmptyMap, true)
-      .configure(KotlinFeature.NullIsSameAsDefault, true)
-      .configure(KotlinFeature.StrictNullChecks, false)
-      .build()
-  )
 
 /**
  * Important http4k `Filter` which:

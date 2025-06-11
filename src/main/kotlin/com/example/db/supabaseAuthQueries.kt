@@ -2,8 +2,9 @@ package com.example.db
 
 import com.auth0.jwt.interfaces.DecodedJWT
 import com.example.authedQueryCacheContextKey
-import com.example.filter.lenientMapper
-import com.fasterxml.jackson.databind.JsonNode
+import com.example.moshi
+import com.squareup.moshi.JsonClass
+import com.squareup.moshi.adapter
 import java.util.UUID
 import kotlin.math.absoluteValue
 import org.http4k.core.Request
@@ -15,12 +16,22 @@ fun Handle.setSupabaseAuthToAuthenticatedUser(@Language("SQL") preRenderedQuery:
   this.createUpdate(preRenderedQuery).execute()
 }
 
+
+
+@JsonClass(generateAdapter = true)
+data class UserMetadata(val email: String?) // can add more
+
+
+@OptIn(ExperimentalStdlibApi::class)
+private val jwtClaimsUserMetadataAdapter = moshi.adapter<UserMetadata>()
+
+
 /** Cannot do this with a prepared statement (interpolation does not seem to work for `set` queries). */
 fun renderSetSupabaseAuthToAuthenticatedUserQuery(jwt: DecodedJWT): String {
-  val userMetadata = lenientMapper.readValue(jwt.claims["user_metadata"].toString(), JsonNode::class.java)
+  val userMetadata = jwtClaimsUserMetadataAdapter.fromJsonValue(jwt.claims["user_metadata"])
   // TODO: More sanitation of "user" input!
   val userUuid = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa") // userUuidContextKey(it),
-  val userEmail = userMetadata["email"].textValue()
+  val userEmail = userMetadata?.email ?: ""
   val orgId = (Math.random() * 100).toInt().absoluteValue.toLong() // TODO: replace with value from metadata
   val issuer = jwt.claims["iss"].toString().replace("\"", "")
   val issuedAt = jwt.claims["iat"].toString()

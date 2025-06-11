@@ -1,13 +1,14 @@
 package com.example.handler.auth
 
 import com.example.Paths
-import com.example.formparser.FormParamDeserializer
 import com.example.handler.redirectAfterFormSubmission
 import com.example.html.template.signup.SignUpForm
 import com.example.html.template.signup.signUpPage
 import com.example.lib.supabase.fetchSupabaseTokens
 import com.example.lib.supabase.signUpWithEmail
 import com.example.lib.supabase.toCookies
+import com.example.moshi
+import com.squareup.moshi.adapter
 import dev.forkhandles.result4k.Failure
 import dev.forkhandles.result4k.Success
 import io.konform.validation.Invalid
@@ -20,9 +21,12 @@ import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.body.form
 import org.http4k.core.cookie.cookie
 
+
+@OptIn(ExperimentalStdlibApi::class)
+private val signUpFormAdapter = moshi.adapter<SignUpForm>()
+
 fun signUpPostHandler(req: Request): Response {
-  val formDto = FormParamDeserializer.deserialize(req.form(), SignUpForm::class)
-    ?: return Response(BAD_REQUEST)
+  val formDto: SignUpForm = signUpFormAdapter.fromJsonValue((req.form())) ?: return Response(BAD_REQUEST)
 
   when (val validationResult = formDto.validate()) {
     is Invalid -> return signUpPage(formDto, validationResult)

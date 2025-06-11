@@ -47,3 +47,9 @@ Changes thus all should be made through the application layer, in there you wrap
 * Total control of the db queries being made. 100% PGSQL.
 * Full control over the use of db transactions (nesting of transactions is allowed), and no transaction is started automatically per request cycle.
 * 12-factor principles (like: configuration by env vars).
+
+
+# TODO
+
+* remove the Jackson dependency (replace with kotlinx.serialization whe strictness is acceptable, or moshi/kotchi where we need more leniency)
+* remove the kotlin-reflect dependency (used by our form-parser, Jackson and Jan's Supabase Auth lib).

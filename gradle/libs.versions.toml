@@ -18,7 +18,7 @@
 # Latest and greatest; used by both the `org.jetbrains.kotlin.jvm` Gradle plugin and the `kotlin-stdlin-jvm`
 # dependency: these two are always released together with the same version string.
 # https://kotlinlang.org/docs/releases.html#release-details
-kotlinVersion = "2.1.21"
+kotlinVersion = "2.1.0"
 
 # Latest, see: https://github.com/http4k/http4k/releases
 http4k = "6.9.2.0"
@@ -26,10 +26,6 @@ http4k = "6.9.2.0"
 # This should align with the $kotlinVersion along the recommendation here:
 # https://github.com/Kotlin/kotlinx.html/releases
 kotlinXHtmlVersion = "0.11.0"
-
-# Used by both jackson and jackson-module-kotlin.
-# https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
-jacksonVersion = "2.19.0"
 
 
 # Latest, see: https://mvnrepository.com/artifact/org.slf4j/slf4j-api
@@ -47,12 +43,6 @@ http4kBom = { group = "org.http4k", name = "http4k-bom", version.ref = "http4k" 
 # Kotlinx.html (our HTML templating eDSL)
 kotlinxHtml = { group = "org.jetbrains.kotlinx", name = "kotlinx-html", version.ref = "kotlinXHtmlVersion" }
 kotlinxHtmlJvm = { group = "org.jetbrains.kotlinx", name = "kotlinx-html-jvm", version.ref = "kotlinXHtmlVersion" }
-
-# Jackson
-jacksonCore = { group = "com.fasterxml.jackson.core", name = "jackson-core", version.ref = "jacksonVersion" }
-jacksonDatabind = { group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jacksonVersion" }
-jacksonModuleKotlin = { group = "com.fasterxml.jackson.module", name = "jackson-module-kotlin", version.ref = "jacksonVersion" }
-jacksonDatatypeJsr310 = { group = "com.fasterxml.jackson.datatype", name = "jackson-datatype-jsr310", version.ref = "jacksonVersion" }
 
 # jjwtJackson = { group = "io.jsonwebtoken", name = "jjwt-jackson", version.ref = "jjwtVersion" }
 
