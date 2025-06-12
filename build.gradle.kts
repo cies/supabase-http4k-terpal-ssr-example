@@ -75,10 +75,11 @@ dependencies {
   implementation("com.zaxxer:HikariCP:5.1.0")
   implementation("org.postgresql:postgresql:42.7.3")
 
-  implementation(platform("io.github.jan-tennert.supabase:bom:3.1.4"))
-  implementation("io.ktor:ktor-client-java:3.1.3") // required by the supabase-kt package (can change to OkHttp when that gets used in other places)
-  implementation("io.github.jan-tennert.supabase:auth-kt")
-  implementation("com.auth0:java-jwt:4.5.0") // TODO: replace with "com.github.PhilJay:JWT:1.2.6"
+//  implementation(platform("io.github.jan-tennert.supabase:bom:3.1.4"))
+//  implementation("io.ktor:ktor-client-java:3.1.3") // required by the supabase-kt package (can change to OkHttp when that gets used in other places)
+//  implementation("io.github.jan-tennert.supabase:auth-kt")
+//  implementation("com.auth0:java-jwt:4.5.0") // TODO: remove
+//  implementation("com.nimbusds:nimbus-jose-jwt:10.3")
   // implementation("io.github.jan-tennert.supabase:postgrest-kt") we use SQL to query
 
   implementation("dev.forkhandles:result4k:2.22.3.0")

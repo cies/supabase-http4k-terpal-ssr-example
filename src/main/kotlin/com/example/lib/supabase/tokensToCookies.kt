@@ -16,7 +16,7 @@ import org.http4k.core.cookie.cookie
  * * We send the refresh token with every request (cannot send a cookie conditionally).
  * * We put very long expiry times on the JWT access token.
  *
- * This basically brings the level of security of this scheme down to match that of a traditional session token cookie.
+ * This basically brings the security level of this scheme down to match that of a traditional session token cookie.
  */
 fun SupabaseTokens.toCookies(): Pair<Cookie, Cookie> {
   val accessTokenCookie = safeCookieFrom(

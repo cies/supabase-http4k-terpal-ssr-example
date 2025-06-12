@@ -1,6 +1,5 @@
 package com.example.db
 
-import com.example.filter.DbCtx
 import io.exoquery.sql.Sql
 import io.exoquery.sql.runOn
 

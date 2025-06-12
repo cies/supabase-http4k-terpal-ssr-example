@@ -3,6 +3,7 @@ package com.example.filter
 import com.example.SUPABASE_POSTGRES_PASSWORD
 import com.example.SUPABASE_POSTGRES_URL
 import com.example.SUPABASE_POSTGRES_USERNAME
+import com.example.db.DbCtx
 import com.example.db.renderSetSupabaseAuthToAuthenticatedUserQuery
 import com.example.db.setSupabaseAuthToAnon
 import com.example.db.setSupabaseAuthToAuthenticatedUser
@@ -32,7 +33,6 @@ val dataSource = HikariDataSource(
   }
 )
 
-typealias DbCtx = TerpalDriver.Postgres
 
 val dbctx: DbCtx = TerpalDriver.Postgres(dataSource)
 

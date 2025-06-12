@@ -1,42 +1,24 @@
 package com.example.db
 
-import com.auth0.jwt.interfaces.DecodedJWT
 import com.example.authedQueryCacheContextKey
-import com.example.filter.DbCtx
-import com.example.moshi
-import com.squareup.moshi.JsonClass
-import com.squareup.moshi.adapter
+import com.example.lib.jwt.JwtData
 import java.util.UUID
 import kotlin.math.absoluteValue
-import kotlin.use
 import org.http4k.core.Request
 import org.intellij.lang.annotations.Language
 
 /** This function works on a pre-rendered query, so we can cache it. */
 fun DbCtx.setSupabaseAuthToAuthenticatedUser(@Language("SQL") preRenderedQuery: String) {
-  this.database.connection.use { jdbc ->
-    jdbc.prepareStatement(preRenderedQuery).execute()
-  }
+  this.database.connection.use { jdbc -> jdbc.prepareStatement(preRenderedQuery).execute() }
 }
 
-
-@JsonClass(generateAdapter = true)
-data class UserMetadata(val email: String?) // can add more
-
-
-@OptIn(ExperimentalStdlibApi::class)
-private val jwtClaimsUserMetadataAdapter = moshi.adapter<UserMetadata>()
-
-
 /** Cannot do this with a prepared statement (interpolation does not seem to work for `set` queries). */
-fun renderSetSupabaseAuthToAuthenticatedUserQuery(jwt: DecodedJWT): String {
-  val userMetadata = jwtClaimsUserMetadataAdapter.fromJson(jwt.claims["user_metadata"].toString())
-  // TODO: More sanitation of "user" input!
-  val userUuid = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa") // userUuidContextKey(it),
-  val userEmail = userMetadata?.email ?: ""
+fun renderSetSupabaseAuthToAuthenticatedUserQuery(jwt: JwtData): String {
+  val userUuid = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa") // userUuidContextKey(it), TODO: revert
+  val userEmail = jwt.userEmail ?: ""
   val orgId = (Math.random() * 100).toInt().absoluteValue.toLong() // TODO: replace with value from metadata
-  val issuer = jwt.claims["iss"].toString().replace("\"", "")
-  val issuedAt = jwt.claims["iat"].toString()
+  val issuer = jwt.issuer.replace("\"", "").replace("\'", "")
+  val issuedAt = jwt.issuedAt.epochSecond
   return (@Language("SQL") """
     select set_config('request.jwt.claim.sub', '${userUuid}', false);
     select set_config('request.jwt.claim.email', '${userEmail.replace("'", "").trim()}', false);
@@ -89,9 +71,7 @@ fun DbCtx.setSupabaseAuthToAnon() {
   val q: String = jwtResetStatements + @Language("SQL") """
     select set_config('role', 'anon', false);
   """.trimIndent()
-  this.database.connection.use { jdbc ->
-    jdbc.prepareStatement(q).execute()
-  }
+  this.database.connection.use { jdbc -> jdbc.prepareStatement(q).execute() }
 }
 
 /** Reset the JWT and set the role to 'service_role' which can view and manage all data but not change the schema. */
@@ -101,9 +81,7 @@ fun DbCtx.setSupabaseAuthToServiceRole() {
   val q: String = jwtResetStatements + @Language("SQL") """
     select set_config('role', 'service_role', false);
   """.trimIndent()
-  this.database.connection.use { jdbc ->
-    jdbc.prepareStatement(q).execute()
-  }
+  this.database.connection.use { jdbc -> jdbc.prepareStatement(q).execute() }
 }
 
 /** Reset the JWT and set the role to the 'postgres' superuser role which can do everything: also change the schema! */
@@ -114,9 +92,7 @@ fun DbCtx.setSupabaseAuthToPostgresRole() {
   val q: String = jwtResetStatements + @Language("SQL") """
     select set_config('role', 'postgres', false);
   """.trimIndent()
-  this.database.connection.use { jdbc ->
-    jdbc.prepareStatement(q).execute()
-  }
+  this.database.connection.use { jdbc -> jdbc.prepareStatement(q).execute() }
 }
 
 private val jwtResetStatements = @Language("PostgreSQL") """

@@ -7,22 +7,24 @@ import com.example.SUPABASE_SERVICE_ROLE_KEY
 import dev.forkhandles.result4k.Failure
 import dev.forkhandles.result4k.Result
 import dev.forkhandles.result4k.Success
-import io.github.jan.supabase.auth.Auth
-import io.github.jan.supabase.auth.auth
-import io.github.jan.supabase.auth.exception.AuthRestException
-import io.github.jan.supabase.auth.providers.builtin.Email
-import io.github.jan.supabase.auth.user.UserInfo
-import io.github.jan.supabase.createSupabaseClient
+import io.github.jan.supabase.auth.user.Identity
+import kotlin.String
 import kotlinx.coroutines.runBlocking
+import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
-import org.http4k.client. OkHttp
+import kotlinx.serialization.json.JsonObject
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.http4k.client.OkHttp
 import org.http4k.core.Body
 import org.http4k.core.Method.POST
 import org.http4k.core.Request
 import org.http4k.core.Status.Companion.OK
+import org.http4k.core.Status.Companion.UNAUTHORIZED
 import org.http4k.format.KotlinxSerialization.auto
 
 
@@ -60,6 +62,7 @@ data class SupabaseTokens(
   @SerialName("refresh_token") val refreshToken: String,
   val user: JsonElement
 )
+
 val tokenResponseSuccessLens = Body.auto<SupabaseTokens>().toLens() // only need one
 
 @Serializable
@@ -68,34 +71,107 @@ data class TokenResponseError(
   @SerialName("error_code") val errorCode: String, // TODO: map these to an enum (invalid_credentials, ...)
   @SerialName("msg") val message: String
 )
+
 val tokenResponseErrorLens = Body.auto<TokenResponseError>().toLens() // only need one
 
-val supabaseClient = createSupabaseClient(SUPABASE_BASEURL, SUPABASE_SERVICE_ROLE_KEY) {
-  install(Auth) {
-    // Set these because we do not use this Supabase Client's sessions
-    autoSaveToStorage = false
-    autoLoadFromStorage = false
-    alwaysAutoRefresh = false // probably needed as well
-  }
-}
+@Serializable
+data class CreateUserRequest(
+  val email: String,
+  val password: String,
+  @SerialName("email_confirm") val emailConfirm: Boolean = false, // `false` here triggers verification email
+  val role: String = "authenticated"
+)
+
 
 fun signUpWithEmail(emailAddress: String, plainPassword: String): Result<UserInfo?, SignUpError> {
-  val user: UserInfo? = try {
-    runBlocking {
-      supabaseClient.auth.signUpWith(Email, Paths.authReturn.fullUrl(APP_BASE_URL)) {
-        email = emailAddress
-        password = plainPassword
-      }
-    }
-  } catch (e: AuthRestException) {
-    if (e.message?.contains("user_already_exists") == true) return Failure(SignUpError.ALREADY_EXISTS)
-    return Failure(SignUpError.UNKNOWN_ERROR)
+
+  val serviceRoleKey = "your-service-role-jwt"
+  val redirectUrl = "https://your-site.com/verify"
+
+
+  val request = Request(POST, "$SUPABASE_BASEURL/auth/v1/admin/users?redirect_to=$redirectUrl")
+    .header("Authorization", "Bearer $SUPABASE_SERVICE_ROLE_KEY")
+    .header("Content-Type", "application/json")
+    .body(Json.encodeToString(CreateUserRequest(emailAddress, plainPassword)))
+  val response = client(request)
+
+  return when (response.status) {
+    OK -> Success(userInfoLens(response))
+    UNAUTHORIZED -> Failure(SignUpError.UnknownError)
+    else -> Failure(SignUpError.UnknownError)
   }
-  return Success(user)
 }
 
-
 enum class SignUpError {
-  ALREADY_EXISTS,
-  UNKNOWN_ERROR
+  AlreadyExists,
+  UnknownError
+}
+
+@Serializable
+data class UserInfo(
+  @SerialName("app_metadata")
+  val appMetadata: JsonObject? = null,
+  @SerialName("aud")
+  val aud: String,
+  @SerialName("confirmation_sent_at")
+  val confirmationSentAt: Instant? = null,
+  @SerialName("confirmed_at")
+  val confirmedAt: Instant? = null,
+  @SerialName("created_at")
+  val createdAt: Instant? = null,
+  @SerialName("email")
+  val email: String? = null,
+  @SerialName("email_confirmed_at")
+  val emailConfirmedAt: Instant? = null,
+  val factors: List<UserMfaFactor> = listOf(),
+  @SerialName("id")
+  val id: String,
+  @SerialName("identities")
+  val identities: List<Identity>? = null,
+  @SerialName("last_sign_in_at")
+  val lastSignInAt: Instant? = null,
+  @SerialName("phone")
+  val phone: String? = null,
+  @SerialName("role")
+  val role: String? = null,
+  @SerialName("updated_at")
+  val updatedAt: Instant? = null,
+  @SerialName("user_metadata")
+  val userMetadata: JsonObject? = null,
+  @SerialName("phone_change_sent_at")
+  val phoneChangeSentAt: Instant? = null,
+  @SerialName("new_phone")
+  val newPhone: String? = null,
+  @SerialName("email_change_sent_at")
+  val emailChangeSentAt: Instant? = null,
+  @SerialName("new_email")
+  val newEmail: String? = null,
+  @SerialName("invited_at")
+  val invitedAt: Instant? = null,
+  @SerialName("recovery_sent_at")
+  val recoverySentAt: Instant? = null,
+  @SerialName("phone_confirmed_at")
+  val phoneConfirmedAt: Instant? = null,
+  @SerialName("action_link")
+  val actionLink: String? = null,
+)
+val userInfoLens = Body.auto<UserInfo>().toLens() // only need one
+
+@Serializable
+data class UserMfaFactor(
+  val id: String,
+  @SerialName("created_at")
+  val createdAt: Instant,
+  @SerialName("updated_at")
+  val updatedAt: Instant,
+  private val status: String,
+  @SerialName("friendly_name")
+  val friendlyName: String? = null,
+  @SerialName("factor_type")
+  val factorType: String
+) {
+
+  val isVerified: Boolean
+    get() = status == "verified"
+
 }
