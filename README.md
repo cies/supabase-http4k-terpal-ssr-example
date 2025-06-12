@@ -51,5 +51,9 @@ Changes thus all should be made through the application layer, in there you wrap
 
 # TODO
 
-* remove the Jackson dependency (replace with kotlinx.serialization whe strictness is acceptable, or moshi/kotchi where we need more leniency)
-* remove the kotlin-reflect dependency (used by our form-parser, Jackson and Jan's Supabase Auth lib).
+* remove the Jackson dependency of moshi (we may be able to use kotchi!)
+* fix tests on formparser
+* walk through all flows again
+* implement some IP + extras logging in
+* look into using "arch tests"
+* 
