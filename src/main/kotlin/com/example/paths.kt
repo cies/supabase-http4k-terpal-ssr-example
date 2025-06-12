@@ -24,8 +24,14 @@ data object Paths {
     UrlPath("/reset-password")
   val passwordResetVerification =
     UrlPath("/reset-password-verification/{token}")
+  val verificationEmailSent =
+    UrlPath("/verification-email-sent")
   val setNewPassword =
     UrlPath("/set-new-password")
+  val authReturn =
+    UrlPath("/auth-return")
+  val optExpired =
+    UrlPath("/otp-expired")
 
   val portal =
     UrlPath("/portal")

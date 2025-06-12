@@ -4,10 +4,12 @@ import com.example.Paths
 import com.example.html.template.passwordreset.RequestPasswordResetForm
 import com.example.html.template.passwordreset.passwordResetLinkMaybeSentPage
 import com.example.html.template.passwordreset.requestPasswordResetPage
+import com.example.lib.formparser.deserialize
 import com.example.lib.supabase.supabaseClient
 import com.example.moshi
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.adapter
+import dev.forkhandles.result4k.valueOrNull
 import io.github.jan.supabase.auth.auth
 import io.konform.validation.Invalid
 import io.konform.validation.Valid
@@ -21,7 +23,8 @@ import org.http4k.core.body.form
 private val jsonAdapter: JsonAdapter<RequestPasswordResetForm> = moshi.adapter<RequestPasswordResetForm>()
 
 fun requestPasswordResetPostHandler(req: Request): Response {
-  val formDto: RequestPasswordResetForm = jsonAdapter.fromJsonValue((req.form())) ?: return Response(BAD_REQUEST)
+  val formDto: RequestPasswordResetForm = jsonAdapter.fromJsonValue(deserialize(req.form()).valueOrNull())
+    ?: return Response(BAD_REQUEST)
 
   return when (val validationResult = formDto.validate()) {
     is Invalid -> requestPasswordResetPage(formDto, validationResult)

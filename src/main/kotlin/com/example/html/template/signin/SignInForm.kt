@@ -1,10 +1,12 @@
 package com.example.html.template.signin
 
+import com.squareup.moshi.JsonClass
 import io.konform.validation.Validation
 import io.konform.validation.ValidationResult
 import io.konform.validation.constraints.minLength
 import io.konform.validation.constraints.pattern
 
+@JsonClass(generateAdapter = true)
 data class SignInForm(
   val email: String?,
   val password: String?,

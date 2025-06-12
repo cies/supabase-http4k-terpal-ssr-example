@@ -100,9 +100,9 @@ create policy "Allow insert for self-managing user in own org"
   );
 
 
-insert into organizations (organization_id, name, manager_user_id)
-values (1, 'Acme Corp', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),  -- Alice
-       (2, 'Beta Ltd', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'),   -- Bob
-       (3, 'Skunkworks', 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'), -- Eve, different manager in same org
-       (4, 'Gamma GmbH', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'); -- Alice managing in another org
+insert into organizations (organization_id, name, manager_user_id) values
+  (1, 'Acme Corp', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),  -- Alice
+  (2, 'Beta Ltd', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'),   -- Bob
+  (3, 'Skunkworks', 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'), -- Eve, different manager in same org
+  (4, 'Gamma GmbH', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'); -- Alice managing in another org
 

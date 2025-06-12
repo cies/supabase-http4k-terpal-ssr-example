@@ -4,6 +4,7 @@ import com.example.Paths
 import com.example.handler.redirectAfterFormSubmission
 import com.example.html.template.signup.SignUpForm
 import com.example.html.template.signup.signUpPage
+import com.example.lib.formparser.deserialize
 import com.example.lib.supabase.fetchSupabaseTokens
 import com.example.lib.supabase.signUpWithEmail
 import com.example.lib.supabase.toCookies
@@ -11,10 +12,12 @@ import com.example.moshi
 import com.squareup.moshi.adapter
 import dev.forkhandles.result4k.Failure
 import dev.forkhandles.result4k.Success
+import dev.forkhandles.result4k.valueOrNull
 import io.konform.validation.Invalid
 import io.konform.validation.Valid
 import io.konform.validation.path.ValidationPath
 import io.konform.validation.path.toPathSegment
+import kotlin.io.path.Path
 import org.http4k.core.Request
 import org.http4k.core.Response
 import org.http4k.core.Status.Companion.BAD_REQUEST
@@ -26,7 +29,8 @@ import org.http4k.core.cookie.cookie
 private val signUpFormAdapter = moshi.adapter<SignUpForm>()
 
 fun signUpPostHandler(req: Request): Response {
-  val formDto: SignUpForm = signUpFormAdapter.fromJsonValue((req.form())) ?: return Response(BAD_REQUEST)
+  val formDto: SignUpForm = signUpFormAdapter.fromJsonValue(deserialize(req.form()).valueOrNull())
+    ?: return Response(BAD_REQUEST)
 
   when (val validationResult = formDto.validate()) {
     is Invalid -> return signUpPage(formDto, validationResult)
@@ -51,8 +55,13 @@ fun signUpPostHandler(req: Request): Response {
             }
 
             is Failure -> {
-              val invalidResult = Invalid.of(ValidationPath(listOf()), signInResult.reason.message)
-              return signUpPage(formDto, invalidResult)
+              return if (signInResult.reason.errorCode == "email_not_confirmed") {
+                // In this case the user has been sent a validation email
+                redirectAfterFormSubmission(Paths.verificationEmailSent.absolutePath())
+              } else {
+                val invalidResult = Invalid.of(ValidationPath(listOf()), signInResult.reason.errorCode)
+                signUpPage(formDto, invalidResult)
+              }
             }
           }
         }

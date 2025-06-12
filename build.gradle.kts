@@ -9,14 +9,13 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 //  id("com.google.devtools.ksp") version "2.1.0-1.0.29"
 //}
 
-
 plugins {
-  kotlin("jvm") version "2.1.0"
+  kotlin("jvm") version "2.1.0" // this makes it a Kotlin-enabled project
   kotlin("plugin.serialization") version "2.1.0"
+  id("io.exoquery.terpal-plugin") version "2.1.0-2.0.0.PL"
   id("com.google.devtools.ksp") version "2.1.0-1.0.29"
   application
 }
-
 
 buildscript {
   repositories {
@@ -76,15 +75,10 @@ dependencies {
   implementation("com.zaxxer:HikariCP:5.1.0")
   implementation("org.postgresql:postgresql:42.7.3")
 
-  implementation("org.jdbi:jdbi3-core:3.49.4")
-  implementation("org.jdbi:jdbi3-postgres:3.49.4") // jdbi plugin for postgres types
-  implementation("org.jdbi:jdbi3-kotlin:3.49.4")
-  implementation("org.jdbi:jdbi3-kotlin-sqlobject:3.49.4")
-
   implementation(platform("io.github.jan-tennert.supabase:bom:3.1.4"))
   implementation("io.ktor:ktor-client-java:3.1.3") // required by the supabase-kt package (can change to OkHttp when that gets used in other places)
   implementation("io.github.jan-tennert.supabase:auth-kt")
-  implementation("com.auth0:java-jwt:4.5.0")
+  implementation("com.auth0:java-jwt:4.5.0") // TODO: replace with "com.github.PhilJay:JWT:1.2.6"
   // implementation("io.github.jan-tennert.supabase:postgrest-kt") we use SQL to query
 
   implementation("dev.forkhandles:result4k:2.22.3.0")
@@ -95,10 +89,14 @@ dependencies {
   implementation(libs.log4jSlf4j2Impl) // the connection to the facade
   implementation(libs.kotlinLogging) // a nice Kotlinesque wrapper
 
+  api("io.exoquery:terpal-sql-jdbc:2.0.0.PL-1.2.0") {
+    exclude(group = "org.xerial", module = "sqlite-jdbc") // 13MB we do not use (TODO: make issue in terpal-sql)
+  }
 
   api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.8.1")
-  implementation("com.squareup.moshi:moshi-kotlin:1.15.2")
-  ksp("com.squareup.moshi:moshi-kotlin-codegen:1.15.0") // still uses kotlin-reflect (try using `kotchi` instead to fix)
+  api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
+  implementation("com.squareup.moshi:moshi-kotlin:1.15.2") // still uses kotlin-reflect (try using `kotchi` instead to fix)
+  ksp("com.squareup.moshi:moshi-kotlin-codegen:1.15.0")
 
   testImplementation("org.http4k:http4k-testing-approval")
   testImplementation("org.http4k:http4k-testing-hamkrest")

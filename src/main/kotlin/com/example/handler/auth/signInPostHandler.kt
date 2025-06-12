@@ -11,6 +11,7 @@ import com.example.moshi
 import com.squareup.moshi.adapter
 import dev.forkhandles.result4k.Failure
 import dev.forkhandles.result4k.Success
+import dev.forkhandles.result4k.valueOrNull
 import io.konform.validation.Invalid
 import io.konform.validation.Valid
 import io.konform.validation.path.ValidationPath
@@ -24,7 +25,8 @@ import org.http4k.core.cookie.cookie
 private val jsonAdapter = moshi.adapter<SignInForm>()
 
 fun signInPostHandler(req: Request): Response {
-  val formDto: SignInForm = jsonAdapter.fromJsonValue(deserialize(req.form())) ?: return Response(BAD_REQUEST)
+  val formDto: SignInForm = jsonAdapter.fromJsonValue(deserialize(req.form()).valueOrNull())
+    ?: return Response(BAD_REQUEST)
 
   when (val validationResult = formDto.validate()) {
     is Invalid -> return signInPage(formDto, validationResult)

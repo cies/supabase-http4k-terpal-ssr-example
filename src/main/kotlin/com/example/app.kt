@@ -1,6 +1,7 @@
 package com.example
 
 import com.auth0.jwt.interfaces.DecodedJWT
+import com.example.filter.DbCtx
 import com.example.filter.htmlErrorStyler
 import com.example.html.template.error.handleException
 import com.squareup.moshi.Moshi
@@ -15,7 +16,6 @@ import org.http4k.filter.ServerFilters
 import org.http4k.lens.RequestKey
 import org.http4k.server.SunHttp
 import org.http4k.server.asServer
-import org.jdbi.v3.core.Handle
 
 
 val env = dotenv()
@@ -26,9 +26,11 @@ val SUPABASE_POSTGRES_URL = env["SUPABASE_POSTGRES_URL"] ?: throw NoSuchFieldExc
 val SUPABASE_POSTGRES_USERNAME = env["SUPABASE_POSTGRES_USERNAME"] ?: throw NoSuchFieldException()
 val SUPABASE_POSTGRES_PASSWORD = env["SUPABASE_POSTGRES_PASSWORD"] ?: throw NoSuchFieldException()
 
+val APP_BASE_URL = env["APP_BASE_URL"] ?: "http://localhost:8080"
+
 val jwtContextKey = RequestKey.required<DecodedJWT>("jwt")
 val userUuidContextKey = RequestKey.required<UUID>("userUuid")
-val dbContextKey = RequestKey.required<Handle>("db")
+val dbContextKey = RequestKey.required<DbCtx>("db")
 val authedQueryCacheContextKey = RequestKey.required<String>("authedQueryCache")
 
 val moshi = Moshi.Builder().build()

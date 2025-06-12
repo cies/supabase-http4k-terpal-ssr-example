@@ -2,20 +2,22 @@ package com.example.db
 
 import com.auth0.jwt.interfaces.DecodedJWT
 import com.example.authedQueryCacheContextKey
+import com.example.filter.DbCtx
 import com.example.moshi
 import com.squareup.moshi.JsonClass
 import com.squareup.moshi.adapter
 import java.util.UUID
 import kotlin.math.absoluteValue
+import kotlin.use
 import org.http4k.core.Request
 import org.intellij.lang.annotations.Language
-import org.jdbi.v3.core.Handle
 
 /** This function works on a pre-rendered query, so we can cache it. */
-fun Handle.setSupabaseAuthToAuthenticatedUser(@Language("SQL") preRenderedQuery: String) {
-  this.createUpdate(preRenderedQuery).execute()
+fun DbCtx.setSupabaseAuthToAuthenticatedUser(@Language("SQL") preRenderedQuery: String) {
+  this.database.connection.use { jdbc ->
+    jdbc.prepareStatement(preRenderedQuery).execute()
+  }
 }
-
 
 
 @JsonClass(generateAdapter = true)
@@ -28,7 +30,7 @@ private val jwtClaimsUserMetadataAdapter = moshi.adapter<UserMetadata>()
 
 /** Cannot do this with a prepared statement (interpolation does not seem to work for `set` queries). */
 fun renderSetSupabaseAuthToAuthenticatedUserQuery(jwt: DecodedJWT): String {
-  val userMetadata = jwtClaimsUserMetadataAdapter.fromJsonValue(jwt.claims["user_metadata"])
+  val userMetadata = jwtClaimsUserMetadataAdapter.fromJson(jwt.claims["user_metadata"].toString())
   // TODO: More sanitation of "user" input!
   val userUuid = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa") // userUuidContextKey(it),
   val userEmail = userMetadata?.email ?: ""
@@ -51,7 +53,7 @@ fun renderSetSupabaseAuthToAuthenticatedUserQuery(jwt: DecodedJWT): String {
  * and then which to the 'authenticated' role (with Supabase auth JWT details set).
  */
 // TODO: eventually this should be removed, only migrations should do this.
-fun <R> Handle.withPostgresRole(req: Request, block: (Handle) -> R): R {
+fun <R> DbCtx.withPostgresRole(req: Request, block: (DbCtx) -> R): R {
   this.setSupabaseAuthToPostgresRole()
 
   val blockResult = block(this)
@@ -65,7 +67,7 @@ fun <R> Handle.withPostgresRole(req: Request, block: (Handle) -> R): R {
  * Convenience function to run one-or-more database queries as 'service_role' role,
  * and then which to the 'authenticated' role (with Supabase auth JWT details set).
  */
-fun <R> Handle.withServiceRoleDANGER(req: Request, block: (Handle) -> R): R {
+fun <R> DbCtx.withServiceRoleDANGER(req: Request, block: (DbCtx) -> R): R {
   this.setSupabaseAuthToServiceRole()
 
   val blockResult = block(this)
@@ -81,34 +83,40 @@ fun <R> Handle.withServiceRoleDANGER(req: Request, block: (Handle) -> R): R {
  * IMPORTANT: This is run before the db connection with a role set is returned to the pool,
  * or later queries will be wrongly authenticated!
  */
-fun Handle.setSupabaseAuthToAnon() {
+fun DbCtx.setSupabaseAuthToAnon() {
   // Cannot reset keys, so we set them to empty strings...
   // The 'anon' role is what we also default new connections/sessions to in the HikariCP configuration.
   val q: String = jwtResetStatements + @Language("SQL") """
     select set_config('role', 'anon', false);
   """.trimIndent()
-  this.createUpdate(q).execute()
+  this.database.connection.use { jdbc ->
+    jdbc.prepareStatement(q).execute()
+  }
 }
 
 /** Reset the JWT and set the role to 'service_role' which can view and manage all data but not change the schema. */
-fun Handle.setSupabaseAuthToServiceRole() {
+fun DbCtx.setSupabaseAuthToServiceRole() {
   // Cannot reset keys, so we set them to empty strings...
   // The 'anon' role is what we also default new connections/sessions to in the HikariCP configuration.
   val q: String = jwtResetStatements + @Language("SQL") """
     select set_config('role', 'service_role', false);
   """.trimIndent()
-  this.createUpdate(q).execute()
+  this.database.connection.use { jdbc ->
+    jdbc.prepareStatement(q).execute()
+  }
 }
 
 /** Reset the JWT and set the role to the 'postgres' superuser role which can do everything: also change the schema! */
 // TODO: eventually this should be removed, only migrations should do this.
-fun Handle.setSupabaseAuthToPostgresRole() {
+fun DbCtx.setSupabaseAuthToPostgresRole() {
   // Cannot reset keys, so we set them to empty strings...
   // The 'anon' role is what we also default new connections/sessions to in the HikariCP configuration.
   val q: String = jwtResetStatements + @Language("SQL") """
     select set_config('role', 'postgres', false);
   """.trimIndent()
-  this.createUpdate(q).execute()
+  this.database.connection.use { jdbc ->
+    jdbc.prepareStatement(q).execute()
+  }
 }
 
 private val jwtResetStatements = @Language("PostgreSQL") """

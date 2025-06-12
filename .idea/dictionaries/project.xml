@@ -9,6 +9,7 @@
       <w>kotlinesque</w>
       <w>postgre</w>
       <w>supabase</w>
+      <w>timestamptz</w>
     </words>
   </dictionary>
 </component>

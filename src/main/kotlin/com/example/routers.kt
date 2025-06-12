@@ -2,6 +2,7 @@ package com.example
 
 import com.example.filter.authenticatedJdbiInitializer
 import com.example.filter.cookieBasedJwtAuthenticator
+import com.example.handler.auth.authReturnGetHandler
 import com.example.handler.auth.requestPasswordResetPostHandler
 import com.example.handler.auth.signUpPostHandler
 import com.example.handler.auth.signInPostHandler
@@ -48,6 +49,14 @@ val mainRouter = routes(
     requestPasswordResetPage(RequestPasswordResetForm.empty(), Valid(RequestPasswordResetForm.empty()))
   },
   Paths.requestPasswordReset.template() bind POST to ::requestPasswordResetPostHandler,
+  Paths.authReturn.template() bind GET to ::authReturnGetHandler,
+  Paths.verificationEmailSent.template() bind GET to {
+    Response(OK).body("<html><body>Email sent! Check your <a href='http://localhost:54324' target='_blank'>mail box</a>.</body></html>")
+  },
+  Paths.optExpired.template() bind GET to {
+    Response(OK).body("<html><body>Verification link expired. Try to <a>reset your password</a> to receive a new link.</body></html>")
+  },
+
   //  Paths.passwordResetVerification.template() bind GET to { req ->
   //    resetPasswordPage(ResetPasswordForm.empty(), Valid(ResetPasswordForm.empty()))
   //  },

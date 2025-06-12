@@ -1,5 +1,7 @@
 package com.example.lib.supabase
 
+import com.example.APP_BASE_URL
+import com.example.Paths
 import com.example.SUPABASE_BASEURL
 import com.example.SUPABASE_SERVICE_ROLE_KEY
 import dev.forkhandles.result4k.Failure
@@ -16,7 +18,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
-import org.http4k.client.OkHttp
+import org.http4k.client. OkHttp
 import org.http4k.core.Body
 import org.http4k.core.Method.POST
 import org.http4k.core.Request
@@ -80,7 +82,7 @@ val supabaseClient = createSupabaseClient(SUPABASE_BASEURL, SUPABASE_SERVICE_ROL
 fun signUpWithEmail(emailAddress: String, plainPassword: String): Result<UserInfo?, SignUpError> {
   val user: UserInfo? = try {
     runBlocking {
-      supabaseClient.auth.signUpWith(Email) {
+      supabaseClient.auth.signUpWith(Email, Paths.authReturn.fullUrl(APP_BASE_URL)) {
         email = emailAddress
         password = plainPassword
       }

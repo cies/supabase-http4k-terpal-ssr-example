@@ -9,14 +9,10 @@ import com.example.db.setSupabaseAuthToAuthenticatedUser
 import com.example.jwtContextKey
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import io.exoquery.sql.jdbc.TerpalDriver
 import org.http4k.core.Filter
 import org.http4k.core.with
 import org.http4k.lens.RequestLens
-import org.jdbi.v3.core.Handle
-import org.jdbi.v3.core.Jdbi
-import org.jdbi.v3.core.kotlin.KotlinPlugin
-import org.jdbi.v3.postgres.PostgresPlugin
-import org.jdbi.v3.sqlobject.kotlin.KotlinSqlObjectPlugin
 
 
 val dataSource = HikariDataSource(
@@ -36,11 +32,9 @@ val dataSource = HikariDataSource(
   }
 )
 
-var jdbi: Jdbi = Jdbi.create(dataSource)
-  .installPlugin(KotlinPlugin())
-  .installPlugin(KotlinSqlObjectPlugin())
-  .installPlugin(PostgresPlugin())
+typealias DbCtx = TerpalDriver.Postgres
 
+val dbctx: DbCtx = TerpalDriver.Postgres(dataSource)
 
 /**
  * Important http4k `Filter` which:
@@ -56,31 +50,36 @@ var jdbi: Jdbi = Jdbi.create(dataSource)
  * We prefer the programmer makes explicit transactions where they are needed (transactions can be nested),
  * instead of implicitly wrapping everything in transactions.
  */
-fun authenticatedJdbiInitializer(dbContextKey: RequestLens<Handle>, authedQueryCache: RequestLens<String>) = Filter { next ->
-  {
-    // Open a Jdbi [Handle]: a db connection gets taken from the pool.
-    jdbi.open().use { db ->
+fun authenticatedJdbiInitializer(dbContextKey: RequestLens<DbCtx>, authedQueryCache: RequestLens<String>) =
+  Filter { next ->
+    {
+//      dbctx.
+//      // Open a Jdbi [Handle]: a db connection gets taken from the pool.
+//      dbctx.database.connection.use { jdbc ->
+//          jdbc.prepareStatement("drop table if exists test_tasks").execute()
+//          jdbc.prepareStatement("create table test_tasks (id serial primary key, name text not null)").execute()
+//        }
 
       // Get auth details (JWT) from the request context and set them auth details on the Jdbi [Handle].
       val authedQueryForCache = renderSetSupabaseAuthToAuthenticatedUserQuery(jwtContextKey(it))
-      db.setSupabaseAuthToAuthenticatedUser(authedQueryForCache)
+      dbctx.setSupabaseAuthToAuthenticatedUser(authedQueryForCache)
 
-      // We now move on to the next layer (`Filter` or `Handler`) up in the stack, while passing Jdbi [Handle] along in
-      // the request context.
-      // We do not return the response immediately because we want to reset the db connection (so it does not contain
-      // auth details before it is returned to the pool).
-      val response = next(
-        it.with(dbContextKey of db)
-          .with(authedQueryCache of authedQueryForCache)
-      )
+        // We now move on to the next layer (`Filter` or `Handler`) up in the stack, while passing Jdbi [Handle] along in
+        // the request context.
+        // We do not return the response immediately because we want to reset the db connection (so it does not contain
+        // auth details before it is returned to the pool).
+        val response = next(
+          it.with(dbContextKey of dbctx)
+            .with(authedQueryCache of authedQueryForCache)
+        )
 
-      // Reset the auth details on the db connection.
-      db.setSupabaseAuthToAnon()
+        // Reset the auth details on the db connection.
+        dbctx.setSupabaseAuthToAnon()
 
-      // Ensure this use-block evaluates to the http4k [Response].
-      response
+        // Ensure this use-block evaluates to the http4k [Response].
+        response
 
-      // When this scope is closed, the Jdbi Handle gets closed: the db connection is returned to the pool.
+        // When this scope is closed, the Jdbi Handle gets closed: the db connection is returned to the pool.
+      }
     }
-  }
-}
+

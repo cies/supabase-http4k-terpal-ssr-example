@@ -38,7 +38,7 @@ fun Response.clearSupabaseAuthCookies() = this
   .cookie(safeCookieFrom("sb-refresh-token", "", Instant.now()))
 
 /** Constructs a cookie with the safety parameters on. */
-private fun safeCookieFrom(name: String, value: String, expires: Instant) = Cookie(
+fun safeCookieFrom(name: String, value: String, expires: Instant) = Cookie(
   name = name,
   value = value,
   expires = expires,
