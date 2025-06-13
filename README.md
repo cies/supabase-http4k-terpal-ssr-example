@@ -49,6 +49,45 @@ Changes thus all should be made through the application layer, in there you wrap
 * 12-factor principles (like: configuration by env vars).
 
 
+### Minimalism
+
+There's a custom task in the Grade file to print the sizes of the dependencies (`depsize-all-configurations`).
+I proudly show its output here:
+
+```
+Configuration name: "implementationDependenciesMetadata"
+Total dependencies size:                                               4.92 Mb
+
+postgresql-42.7.3.jar                                              1,063.78 kb
+kotlinx-html-jvm-0.11.0.jar                                          865.22 kb
+http4k-core-6.9.2.0.jar                                              836.43 kb
+okhttp-4.12.0.jar                                                    771.03 kb
+kotlinx-serialization-json-jvm-1.8.1.jar                             270.48 kb
+http4k-realtime-core-6.9.2.0.jar                                     198.30 kb
+kotlin-stdlib-2.1.20-all.jar                                         188.35 kb
+HikariCP-5.1.0.jar                                                   158.05 kb
+kotlin-logging-jvm-7.0.7.jar                                         106.46 kb
+http4k-format-core-6.9.2.0.jar                                        96.04 kb
+slf4j-api-2.0.17.jar                                                  68.27 kb
+kotlinx-html-metadata-0.11.0.jar                                      68.15 kb
+http4k-config-6.9.2.0.jar                                             59.66 kb
+http4k-format-kotlinx-serialization-6.9.2.0.jar                       56.52 kb
+kotlinx-serialization-core-metadata-1.8.1.jar                         53.57 kb
+kotlinx-serialization-json-metadata-1.8.1.jar                         42.05 kb
+okio-metadata-3.6.0-all.jar                                           36.46 kb
+http4k-client-okhttp-6.9.2.0.jar                                      28.90 kb
+result4k-2.22.3.0.jar                                                 27.39 kb
+konform-metadata-0.11.0.jar                                           19.92 kb
+slf4j-simple-2.0.17.jar                                               15.35 kb
+terpal-runtime-metadata-2.1.0-2.0.0.PL.jar                             6.83 kb
+kotlin-stdlib-jdk8-1.8.21.jar                                          0.95 kb
+kotlin-stdlib-jdk7-1.8.21.jar                                          0.94 kb
+terpal-sql-jdbc-metadata-2.0.0.PL-1.2.0.jar                            0.63 kb
+```
+
+5MB for a stack as featureful as this is an amazing feat.
+
+
 # TODO
 
 * remove the Jackson dependency of moshi (we may be able to use kotchi!)
