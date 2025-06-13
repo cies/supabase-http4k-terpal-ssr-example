@@ -8,8 +8,6 @@ import com.example.lib.formparser.deserialize
 import com.example.lib.supabase.fetchSupabaseTokens
 import com.example.lib.supabase.signUpWithEmail
 import com.example.lib.supabase.toCookies
-import com.example.moshi
-import com.squareup.moshi.adapter
 import dev.forkhandles.result4k.Failure
 import dev.forkhandles.result4k.Success
 import dev.forkhandles.result4k.valueOrNull
@@ -17,7 +15,8 @@ import io.konform.validation.Invalid
 import io.konform.validation.Valid
 import io.konform.validation.path.ValidationPath
 import io.konform.validation.path.toPathSegment
-import kotlin.io.path.Path
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromJsonElement
 import org.http4k.core.Request
 import org.http4k.core.Response
 import org.http4k.core.Status.Companion.BAD_REQUEST
@@ -25,11 +24,9 @@ import org.http4k.core.body.form
 import org.http4k.core.cookie.cookie
 
 
-@OptIn(ExperimentalStdlibApi::class)
-private val signUpFormAdapter = moshi.adapter<SignUpForm>()
-
 fun signUpPostHandler(req: Request): Response {
-  val formDto: SignUpForm = signUpFormAdapter.fromJsonValue(deserialize(req.form()).valueOrNull())
+  val deserialized = deserialize(req.form()).valueOrNull() ?: throw AssertionError("Deserialization failed")
+  val formDto: SignUpForm = Json{}.decodeFromJsonElement(deserialized)
     ?: return Response(BAD_REQUEST)
 
   when (val validationResult = formDto.validate()) {

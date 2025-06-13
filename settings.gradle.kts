@@ -1,1 +1,1 @@
-rootProject.name = "application"
+rootProject.name = "supabase-http4k"

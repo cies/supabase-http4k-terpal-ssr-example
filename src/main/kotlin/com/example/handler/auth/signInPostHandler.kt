@@ -2,31 +2,31 @@ package com.example.handler.auth
 
 import com.example.Paths
 import com.example.handler.redirectAfterFormSubmission
+import com.example.html.template.passwordreset.RequestPasswordResetForm
 import com.example.html.template.signin.SignInForm
 import com.example.html.template.signin.signInPage
 import com.example.lib.formparser.deserialize
 import com.example.lib.supabase.fetchSupabaseTokens
 import com.example.lib.supabase.toCookies
-import com.example.moshi
-import com.squareup.moshi.adapter
 import dev.forkhandles.result4k.Failure
 import dev.forkhandles.result4k.Success
 import dev.forkhandles.result4k.valueOrNull
 import io.konform.validation.Invalid
 import io.konform.validation.Valid
 import io.konform.validation.path.ValidationPath
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromJsonElement
 import org.http4k.core.Request
 import org.http4k.core.Response
 import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.body.form
 import org.http4k.core.cookie.cookie
 
-@OptIn(ExperimentalStdlibApi::class)
-private val jsonAdapter = moshi.adapter<SignInForm>()
 
 fun signInPostHandler(req: Request): Response {
-  val formDto: SignInForm = jsonAdapter.fromJsonValue(deserialize(req.form()).valueOrNull())
-    ?: return Response(BAD_REQUEST)
+  val deserialized = deserialize(req.form()).valueOrNull() ?: throw AssertionError("Deserialization failed")
+  val formDto: SignInForm = Json{}.decodeFromJsonElement(deserialized)
+    ?: return Response(BAD_REQUEST) // TODO: it is currently not yielding null
 
   when (val validationResult = formDto.validate()) {
     is Invalid -> return signInPage(formDto, validationResult)

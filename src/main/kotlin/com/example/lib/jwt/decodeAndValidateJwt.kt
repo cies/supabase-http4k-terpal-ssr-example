@@ -1,10 +1,8 @@
 package com.example.lib.jwt
 
-import com.example.SUPABASE_JWT_SECRET
-import com.example.moshi
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
-import com.squareup.moshi.adapter
+import com.example.env
+import com.example.lenientJsonParser
+import com.example.supabaseJwtSecret
 import dev.forkhandles.result4k.Failure
 import dev.forkhandles.result4k.Result
 import dev.forkhandles.result4k.Success
@@ -19,15 +17,15 @@ import java.util.Base64
 import java.util.UUID
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 
 
 private val log = KotlinLogging.logger {}
 
-@OptIn(ExperimentalStdlibApi::class)
-private val jwtPayloadAdapter = moshi.adapter<JwtDataLenient>()
-
 private val jwtHs256Verifier: Mac = Mac.getInstance("HmacSHA256").apply {
-  init(SecretKeySpec(SUPABASE_JWT_SECRET.toByteArray(), "HmacSHA256"))
+  init(SecretKeySpec(supabaseJwtSecret(env).use { it.toByteArray()}, "HmacSHA256"))
 }
 
 
@@ -59,8 +57,8 @@ fun decodeAndVerifySupabaseJwt(jwtAccessToken: String): Result<JwtData, JwtError
   }
 
   // Check the payload (more checks --like validation-- may follow)
-  val jwtDataLenient: JwtDataLenient =
-    jwtPayloadAdapter.fromJson(payloadJson) ?: return Failure(JwtError.UnparsablePayload)
+  val jwtDataLenient: JwtDataLenient = lenientJsonParser.decodeFromString(payloadJson)
+    ?: return Failure(JwtError.UnparsablePayload) // TODO: no null result to return Failure on
   return when (jwtDataLenient.validate()) {
     is Invalid -> {
       log.warn { "Invalid JWT payload structure, got '$payloadJson'" }
@@ -116,7 +114,7 @@ fun decodeAndVerifySupabaseJwt(jwtAccessToken: String): Result<JwtData, JwtError
 //   "is_anonymous": false
 // }
 
-@JsonClass(generateAdapter = true)
+
 data class JwtData(
   val userUuid: UUID?,
   val userEmail: String?,
@@ -155,33 +153,36 @@ enum class JwtError {
   Unknown
 }
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class JwtDataLenient(
-  @Json(name = "sub")
+  @SerialName("sub")
   val userUuid: String?,
 
-  @Json(name = "email")
+  @SerialName("email")
   val userEmail: String?,
 
-  @Json(name = "role")
+  @SerialName("phone")
+  val userPhoneNumber: String?,
+
+  @SerialName("role")
   val userRole: String?,
 
-  @Json(name = "aud")
+  @SerialName("aud")
   val audience: String?,
 
-  @Json(name = "iss")
+  @SerialName("iss")
   val issuer: String?,
 
-  @Json(name = "iat")
+  @SerialName("iat")
   val issuedAt: Long?,
 
-  @Json(name = "exp")
+  @SerialName("exp")
   val expiresAt: Long?,
 
-  @Json(name = "session_id")
+  @SerialName("session_id")
   val sessionId: String?,
 
-  @Json(name = "is_anonymous")
+  @SerialName("is_anonymous")
   val isAnonymous: Boolean?
 ) {
   fun validate(): ValidationResult<JwtDataLenient> {

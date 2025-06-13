@@ -4,55 +4,73 @@ import com.example.db.DbCtx
 import com.example.filter.htmlErrorStyler
 import com.example.html.template.error.handleException
 import com.example.lib.jwt.JwtData
-import com.squareup.moshi.Moshi
-import io.github.cdimascio.dotenv.dotenv
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry
+import java.io.File
 import java.util.UUID
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
+import org.http4k.config.Environment
+import org.http4k.config.EnvironmentKey
+import org.http4k.config.Secret
 import org.http4k.core.HttpHandler
+import org.http4k.core.Uri
 import org.http4k.core.then
 import org.http4k.filter.DebuggingFilters
-import org.http4k.filter.MicrometerMetrics
 import org.http4k.filter.ServerFilters
 import org.http4k.lens.RequestKey
+import org.http4k.lens.secret
+import org.http4k.lens.string
+import org.http4k.lens.uri
 import org.http4k.server.SunHttp
 import org.http4k.server.asServer
 
 
-val env = dotenv()
-val SUPABASE_JWT_SECRET = env["SUPABASE_JWT_SECRET"] ?: throw NoSuchFieldException()
-val SUPABASE_BASEURL = env["SUPABASE_BASEURL"] ?: throw NoSuchFieldException()
-val SUPABASE_SERVICE_ROLE_KEY = env["SUPABASE_SERVICE_ROLE_KEY"] ?: throw NoSuchFieldException()
-val SUPABASE_POSTGRES_URL = env["SUPABASE_POSTGRES_URL"] ?: throw NoSuchFieldException()
-val SUPABASE_POSTGRES_USERNAME = env["SUPABASE_POSTGRES_USERNAME"] ?: throw NoSuchFieldException()
-val SUPABASE_POSTGRES_PASSWORD = env["SUPABASE_POSTGRES_PASSWORD"] ?: throw NoSuchFieldException()
+val supabaseBaseUrl = EnvironmentKey.uri().required("SUPABASE_BASEURL")
+val supabaseJwtSecret = EnvironmentKey.secret().required("SUPABASE_JWT_SECRET")
+val supabaseServiceRoleKey = EnvironmentKey.string().required("SUPABASE_SERVICE_ROLE_KEY") // make Secret (but then use only once)
+val supabasePostgresUrl = EnvironmentKey.uri().required("SUPABASE_POSTGRES_URL")
+val supabasePostgresUsername = EnvironmentKey.string().required("SUPABASE_POSTGRES_USERNAME")
+val supabasePostgresPassword = EnvironmentKey.secret().required("SUPABASE_POSTGRES_PASSWORD")
 
-val APP_BASE_URL = env["APP_BASE_URL"] ?: "http://localhost:8080"
+private val defaultConfig = Environment.defaults(
+  supabaseBaseUrl of Uri.of("http://localhost:8080"),
+  supabasePostgresUrl of Uri.of("postgresql://127.0.0.1:54322/postgres"),
+  supabasePostgresUsername of "postgres",
+  supabasePostgresPassword of Secret("postgres"),
+)
+
+val env = Environment.from(File(".env")) overrides Environment.ENV overrides defaultConfig
 
 val jwtContextKey = RequestKey.required<JwtData>("jwt")
 val userUuidContextKey = RequestKey.required<UUID>("userUuid")
 val dbContextKey = RequestKey.required<DbCtx>("db")
 val authedQueryCacheContextKey = RequestKey.required<String>("authedQueryCache")
 
-val moshi = Moshi.Builder().build()
 
-//@KotshiJsonAdapterFactory
-//private object ExampleJsonAdapterFactory : JsonAdapter.Factory by
-//    KotshiExampleJsonAdapterFactory // this class will be generated during compile
-//
-//val moshi = ConfigurableMoshi(
-//  Moshi.Builder()
-//    .add(ExampleJsonAdapterFactory) // inject kotshi here
-//    .addLast(EventAdapter)
-//    .addLast(ThrowableAdapter)
-//    .addLast(ListAdapter)
-//    .addLast(MapAdapter)
-//    .asConfigurable()
-//    .withStandardMappings()
-//    .done()
-//)
+private val json = Json // Our main JSON serialization
 
-/** A micrometer registry used mostly for testing - substitute the correct implementation. */
-val registry = SimpleMeterRegistry()
+val strictJsonDecoder = json // quite strict by default
+
+@OptIn(ExperimentalSerializationApi::class)
+val lenientJsonParser = Json {
+  ignoreUnknownKeys = true
+  isLenient = true
+  coerceInputValues = true
+  decodeEnumsCaseInsensitive = true
+  allowTrailingComma = true
+  allowComments = true
+  allowSpecialFloatingPointValues = true
+}
+
+val minimalizingJsonEncoder = json // quite minimalizing by default
+
+@OptIn(ExperimentalSerializationApi::class)
+val prettyJsonEncoder = Json {
+  encodeDefaults = true
+  explicitNulls = true
+  prettyPrint = true
+  prettyPrintIndent = "  "
+}
+
 
 /**
  * This contains the http4k `Filter` stack that's the same for all request.
@@ -61,8 +79,6 @@ val registry = SimpleMeterRegistry()
 val app: HttpHandler = ServerFilters.CatchAll(::handleException)
   .then(htmlErrorStyler)
   .then(DebuggingFilters.PrintRequestAndResponse())
-  .then(ServerFilters.MicrometerMetrics.RequestCounter(registry))
-  .then(ServerFilters.MicrometerMetrics.RequestTimer(registry))
   .then(mainRouter)
 
 fun main() {

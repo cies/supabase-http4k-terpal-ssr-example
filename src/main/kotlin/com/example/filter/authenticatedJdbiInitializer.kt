@@ -1,13 +1,14 @@
 package com.example.filter
 
-import com.example.SUPABASE_POSTGRES_PASSWORD
-import com.example.SUPABASE_POSTGRES_URL
-import com.example.SUPABASE_POSTGRES_USERNAME
 import com.example.db.DbCtx
 import com.example.db.renderSetSupabaseAuthToAuthenticatedUserQuery
 import com.example.db.setSupabaseAuthToAnon
 import com.example.db.setSupabaseAuthToAuthenticatedUser
+import com.example.env
 import com.example.jwtContextKey
+import com.example.supabasePostgresPassword
+import com.example.supabasePostgresUrl
+import com.example.supabasePostgresUsername
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.exoquery.sql.jdbc.TerpalDriver
@@ -16,11 +17,11 @@ import org.http4k.core.with
 import org.http4k.lens.RequestLens
 
 
-val dataSource = HikariDataSource(
+private val dataSource = HikariDataSource(
   HikariConfig().apply {
-    this.jdbcUrl = "jdbc:$SUPABASE_POSTGRES_URL"
-    this.username = SUPABASE_POSTGRES_USERNAME
-    this.password = SUPABASE_POSTGRES_PASSWORD
+    this.jdbcUrl = "jdbc:${supabasePostgresUrl(env)}"
+    this.username = supabasePostgresUsername(env)
+    this.password = supabasePostgresPassword(env).use { it } // can read only once
     this.driverClassName = "org.postgresql.Driver"
     this.maximumPoolSize = 10
     this.minimumIdle = 2

@@ -1,12 +1,13 @@
 package com.example.html.template.signup
 
-import com.squareup.moshi.JsonClass
 import io.konform.validation.Validation
 import io.konform.validation.ValidationResult
 import io.konform.validation.constraints.minLength
 import io.konform.validation.constraints.pattern
+import kotlinx.serialization.Serializable
 
-@JsonClass(generateAdapter = true)
+
+@Serializable
 data class SignUpForm(val email: String?, val password: String?) {
 
   companion object {

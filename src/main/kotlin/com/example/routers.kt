@@ -78,5 +78,5 @@ val mainRouter = routes(
   Paths.robotsTxt.template() bind GET to {
     Response(OK).body(Classpath("static").load("/robots.txt")!!.openStream())
   },
-  Paths.static.template() bind static(Classpath("static")),
+  Paths.static.template() bind static(Classpath("static"))
 )

@@ -1,24 +1,17 @@
 package com.example.lib.supabase
 
-import com.example.APP_BASE_URL
-import com.example.Paths
-import com.example.SUPABASE_BASEURL
-import com.example.SUPABASE_SERVICE_ROLE_KEY
+import com.example.env
+import com.example.supabaseBaseUrl
+import com.example.supabaseServiceRoleKey
 import dev.forkhandles.result4k.Failure
 import dev.forkhandles.result4k.Result
 import dev.forkhandles.result4k.Success
-import io.github.jan.supabase.auth.user.Identity
-import kotlin.String
-import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.RequestBody
-import okhttp3.RequestBody.Companion.toRequestBody
 import org.http4k.client.OkHttp
 import org.http4k.core.Body
 import org.http4k.core.Method.POST
@@ -30,20 +23,20 @@ import org.http4k.format.KotlinxSerialization.auto
 
 val client = OkHttp() // only need one
 
-fun fetchSupabaseTokens(email: String, password: String): Result<SupabaseTokens, TokenResponseError> {
-  val url = "$SUPABASE_BASEURL/auth/v1/token?grant_type=password"
+fun fetchSupabaseTokens(email: String, password: String): Result<TokenResponseSuccess, TokenResponseError> {
+  val url = "${supabaseBaseUrl(env)}/auth/v1/token?grant_type=password"
   return fetchSupabaseTokens(url, mapOf("email" to email, "password" to password))
 }
 
-fun fetchSupabaseTokens(refreshToken: String): Result<SupabaseTokens, TokenResponseError> {
-  val url = "$SUPABASE_BASEURL/auth/v1/token?grant_type=refresh_token"
+fun fetchSupabaseTokens(refreshToken: String): Result<TokenResponseSuccess, TokenResponseError> {
+  val url = "${supabaseBaseUrl(env)}/auth/v1/token?grant_type=refresh_token"
   return fetchSupabaseTokens(url, mapOf("refresh_token" to refreshToken))
 }
 
 private fun fetchSupabaseTokens(
   url: String,
   jsonBody: Map<String, String>
-): Result<SupabaseTokens, TokenResponseError> {
+): Result<TokenResponseSuccess, TokenResponseError> {
   val jsonBody = Json.encodeToString(jsonBody)
   val request = Request(POST, url)
     .header("Content-Type", "application/json")
@@ -55,7 +48,7 @@ private fun fetchSupabaseTokens(
 }
 
 @Serializable
-data class SupabaseTokens(
+data class TokenResponseSuccess(
   @SerialName("access_token") val accessToken: String,
   @SerialName("token_type") val tokenType: String,
   @SerialName("expires_in") val expiresIn: Int,
@@ -63,7 +56,7 @@ data class SupabaseTokens(
   val user: JsonElement
 )
 
-val tokenResponseSuccessLens = Body.auto<SupabaseTokens>().toLens() // only need one
+val tokenResponseSuccessLens = Body.auto<TokenResponseSuccess>().toLens() // only need one
 
 @Serializable
 data class TokenResponseError(
@@ -89,8 +82,8 @@ fun signUpWithEmail(emailAddress: String, plainPassword: String): Result<UserInf
   val redirectUrl = "https://your-site.com/verify"
 
 
-  val request = Request(POST, "$SUPABASE_BASEURL/auth/v1/admin/users?redirect_to=$redirectUrl")
-    .header("Authorization", "Bearer $SUPABASE_SERVICE_ROLE_KEY")
+  val request = Request(POST, "${supabaseBaseUrl(env)}/auth/v1/admin/users?redirect_to=$redirectUrl")
+    .header("Authorization", "Bearer ${supabaseServiceRoleKey(env)}")
     .header("Content-Type", "application/json")
     .body(Json.encodeToString(CreateUserRequest(emailAddress, plainPassword)))
   val response = client(request)
@@ -106,6 +99,11 @@ enum class SignUpError {
   AlreadyExists,
   UnknownError
 }
+
+
+val userInfoLens = Body.auto<UserInfo>().toLens() // only need one
+
+// The following are copied from the `supabase-kt` library that was removed from the project due to dependency load.
 
 @Serializable
 data class UserInfo(
@@ -155,7 +153,6 @@ data class UserInfo(
   @SerialName("action_link")
   val actionLink: String? = null,
 )
-val userInfoLens = Body.auto<UserInfo>().toLens() // only need one
 
 @Serializable
 data class UserMfaFactor(
@@ -170,8 +167,26 @@ data class UserMfaFactor(
   @SerialName("factor_type")
   val factorType: String
 ) {
-
   val isVerified: Boolean
     get() = status == "verified"
-
 }
+
+@Serializable
+data class Identity(
+  @SerialName("id")
+  val id: String,
+  @SerialName("identity_data")
+  val identityData: JsonObject,
+  @SerialName("identity_id")
+  val identityId: String? = null,
+  @SerialName("last_sign_in_at")
+  val lastSignInAt: String? = null,
+  @SerialName("updated_at")
+  val updatedAt: String? = null,
+  @SerialName("created_at")
+  val createdAt: String? = null,
+  @SerialName("provider")
+  val provider: String,
+  @SerialName("user_id")
+  val userId: String
+)

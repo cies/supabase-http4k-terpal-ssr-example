@@ -31,6 +31,9 @@ kotlinXHtmlVersion = "0.11.0"
 # Latest, see: https://mvnrepository.com/artifact/org.slf4j/slf4j-api
 log4jVersion = "2.24.3"
 
+# Latest, see: https://mvnrepository.com/artifact/org.slf4j/slf4j-api
+slf4Version = "2.0.17"
+
 
 [libraries]
 
@@ -48,7 +51,8 @@ kotlinxHtmlJvm = { group = "org.jetbrains.kotlinx", name = "kotlinx-html-jvm", v
 
 
 
-slf4jApi = { group = "org.slf4j", name = "slf4j-api", version = "2.0.17" }
+slf4jApi = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4Version" }
+slf4jSimple = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4Version" }
 log4jCore = { group = "org.apache.logging.log4j", name = "log4j-core", version.ref = "log4jVersion" }
 log4jSlf4j2Impl = { group = "org.apache.logging.log4j", name = "log4j-slf4j2-impl", version.ref = "log4jVersion" }
 kotlinLogging = { group = "io.github.oshai", name = "kotlin-logging-jvm", version = "7.0.7" }

@@ -18,7 +18,7 @@ import org.http4k.core.cookie.cookie
  *
  * This basically brings the security level of this scheme down to match that of a traditional session token cookie.
  */
-fun SupabaseTokens.toCookies(): Pair<Cookie, Cookie> {
+fun TokenResponseSuccess.toCookies(): Pair<Cookie, Cookie> {
   val accessTokenCookie = safeCookieFrom(
     name = "sb-access-token",
     value = this.accessToken,

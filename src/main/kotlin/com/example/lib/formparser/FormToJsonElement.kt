@@ -3,6 +3,12 @@ package com.example.lib.formparser
 import dev.forkhandles.result4k.Failure
 import dev.forkhandles.result4k.Result
 import dev.forkhandles.result4k.Success
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 
 private const val DOT = '.'
 private const val OPEN_BRACKET = '['
@@ -13,34 +19,31 @@ private const val DEPTH_LIMIT = 50
 /** With a positive lookahead to not removes delimiters */
 private val NAME_SPLITTER = "(?=\\.)|(?=\\[)".toRegex()
 
-/**
- * Forms are submitted as x-www-form-urlencoded pairs. To provide structure to the submitted data,
- * various naming conventions for the keys ('name' attributes in the form's input fields) have
- * emerged. This class uses [Konform](https://www.konform.io)'s convention.
- *
- * Here are some test cases of Konform (look for the dataPath strings):
- * https://github.com/konform-kt/konform/blob/master/src/commonTest/kotlin/io/konform/validation/ValidationResultTest.kt
- *
- * The convention is simple: property names start with a dot (`.`) and array elements are
- * specified with a number between brackets (`[]`).
- *
- * See the tests of this class for examples.
- *
- * This class uses the Jackson library for creating JSON structures because this library provides
- * sophisticated type coercion when deserializing a JSON string to an object. This is needed because
- * this class does not coerce the values (it does not know what to coerce them to), so all values
- * resulting from transposing a form submission to JSON are of type string.
- *
- * Some behavior: last value wins (and since the order of a Map is undetermined, the last is
- * not known at compile time), array indexes need to be of int >= 0, if array indexes leave gaps,
- * they are filled with nulls.
- *
- * The output of the [deserialize] method (a Jackson-internal JSON representation) can then be used to do
- * the actual mapping to a DTO.
- */
 
+// Forms are submitted as x-www-form-urlencoded pairs. To provide structure to the submitted data,
+// various naming conventions for the keys ('name' attributes in the form's input fields) have
+// emerged. This class uses [Konform](https://www.konform.io)'s convention.
+//
+// Here are some test cases of Konform (look for the dataPath strings):
+// https://github.com/konform-kt/konform/blob/master/src/commonTest/kotlin/io/konform/validation/ValidationResultTest.kt
+//
+// The convention is straightforward: property names start with a dot (`.`), and array elements are
+// specified with a number between brackets (`[]`).
+//
+// See the tests of this class for examples.
+//
+// This class uses the Jackson library for creating JSON structures because this library provides
+// sophisticated type coercion when deserializing a JSON string to an object. This is needed because
+// this class does not coerce the values (it does not know what to coerce them to), so all values
+// resulting from transposing a form submission to JSON are of type string.
+//
+// Some behavior: last value wins (and since the order of a Map is undetermined, the last is
+// not known at compile time), array indexes need to be of int >= 0, if array indexes leave gaps,
+// they are filled with nulls.
+//
+// The output of the [deserialize] method (a Jackson-internal JSON representation) can then be used to do
+// the actual mapping to a DTO.
 
-val LEADING_CHARACTERS = charArrayOf(DOT, OPEN_BRACKET)
 
 /**
  * Turns key-value pairs (basically a www-form-urlencoded form submission), into something Moshi
@@ -52,8 +55,8 @@ val LEADING_CHARACTERS = charArrayOf(DOT, OPEN_BRACKET)
  *
  * The type of [pairs] matches the type of form submissions as exposed by [http4k](https://http4k.org).
  */
-fun deserialize(pairs: List<Pair<String, String?>>): Result<Any?, String> {
-  var rootNode: Map<String, Any?> = mutableMapOf()
+fun deserialize(pairs: List<Pair<String, String?>>): Result<JsonElement, String> {
+  var rootNode = JsonObject(emptyMap())
   pairs.forEach { (name, value) ->
     val splitName = name.split(NAME_SPLITTER)
     if (splitName.firstOrNull()?.isNotEmpty() == true) {
@@ -70,10 +73,10 @@ fun deserialize(pairs: List<Pair<String, String?>>): Result<Any?, String> {
         if (it.startsWith(OPEN_BRACKET)) it.dropLast(1) else it
       }
     if (taggedSegments.firstOrNull() != null) {
-      val jsonResult = normalizeToJson(rootNode, taggedSegments, 0, value)
+      val jsonResult = normalizeToJson(rootNode, taggedSegments, 0, JsonPrimitive(value))
       rootNode = when (jsonResult) {
         is Success -> when (jsonResult.value) {
-          is MutableMap<*, *> -> jsonResult.value as MutableMap<String, Any?>
+          is JsonObject -> jsonResult.value as JsonObject
           else -> return Failure("Got weird value ${jsonResult.value}")
         }
 
@@ -104,11 +107,11 @@ fun deserialize(pairs: List<Pair<String, String?>>): Result<Any?, String> {
  * [ObjectNode] or an [ArrayNode]), or alternatively an error message in case we could not parse the input.
  */
 private fun normalizeToJson(
-  parentMap: Any?,
+  parentMap: JsonElement?,
   taggedSegments: List<String>,
   segmentIndex: Int,
-  value: String?
-): Result<Any?, String> {
+  value: JsonPrimitive
+): Result<JsonElement, String> {
   if (segmentIndex > DEPTH_LIMIT) return Failure("Structure too deep")
   if (segmentIndex >= taggedSegments.size) {
     return Success(value)
@@ -117,16 +120,17 @@ private fun normalizeToJson(
   val currentSegment = currentTaggedSegment.substring(1) // Without the "tag".
   return when (currentTaggedSegment[0]) {
     DOT -> {
-      val (currentObject: MutableMap<*, *>, nextNode: Any?) = when (parentMap) {
-        is MutableMap<*, *> -> Pair(parentMap, parentMap[currentSegment])
+      val (currentObject: JsonObject, nextNode: JsonElement?) = when (parentMap) {
+        is JsonObject -> Pair(parentMap, parentMap[currentSegment])
         // If `parent` is NullNode, TextNode, ArrayNode or `null`: simply replace it (last one wins).
-        else -> Pair(mutableMapOf<String, Any?>(), null)
+        else -> Pair(JsonObject(emptyMap()), JsonNull)
       }
       when (val result = normalizeToJson(nextNode, taggedSegments, segmentIndex + 1, value)) {
         is Failure -> result
         is Success -> {
-          (currentObject as MutableMap<String, Any?>)[currentSegment] = result.value
-          Success(currentObject)
+          val internalJsonObject = currentObject.toMutableMap()
+          internalJsonObject[currentSegment] = result.value
+          Success(JsonObject(internalJsonObject))
         }
       }
     }
@@ -137,10 +141,10 @@ private fun normalizeToJson(
         ?: return Failure("Expected an integer instead of '$currentSegment'")
       if (index < 0) return Failure("Expected integer > 0, got $index")
 
-      val (currentArray: MutableList<*>, nextNode: Any?) = when (parentMap) {
-        is MutableList<*> -> Pair(parentMap, parentMap[index])
+      val (currentArray: JsonArray, nextNode: JsonElement) = when (parentMap) {
+        is JsonArray -> Pair(parentMap, parentMap[index])
         // If `parent` is ObjectNode, NullNode, TextNode or `null`: simply replace it (last one wins).
-        else -> Pair(mutableListOf<Any?>(), null)
+        else -> Pair(JsonArray(emptyList()), JsonNull)
       }
       when (val jsonResult = normalizeToJson(nextNode, taggedSegments, segmentIndex + 1, value)) {
         is Failure -> jsonResult
@@ -156,11 +160,17 @@ private fun normalizeToJson(
 }
 
 /** Adds [value] to [initialArray] on the [index] position, padded with NullNodes if needed. */
-fun nullPaddedAddToArray(initialArray: MutableList<*>?, index: Int, value: Any?): MutableList<Any?> {
-  // Handle `initialArray` being `null` or `JsonNodeType.NULL`
-  val array: MutableList<Any?> = (initialArray ?: mutableListOf<Any?>()) as MutableList<Any?>
+fun nullPaddedAddToArray(initialArray: JsonArray?, index: Int, value: JsonElement): JsonArray {
+  // Handle `initialArray` being `null`
+  val array: JsonArray = (initialArray ?: JsonArray(listOf()))
   if (index < 0) return array // ignore index < 0
-  (array.size..index).forEach { _ -> array.add(null) } // pad with nulls if needed
-  array[index] = value
-  return array
+  val internalArray = array.toMutableList()
+  if (index > internalArray.size) {
+    (internalArray.size..index).forEach { _ ->
+      @OptIn(ExperimentalSerializationApi::class)
+      internalArray.add(JsonNull) // pad with nulls if needed
+    }
+  }
+  internalArray[index] = value
+  return JsonArray(internalArray)
 }
