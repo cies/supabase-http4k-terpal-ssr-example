@@ -21,7 +21,7 @@
 kotlinVersion = "2.1.0"
 
 # Latest, see: https://github.com/http4k/http4k/releases
-http4k = "6.9.2.0"
+http4kVersion = "6.9.2.0"
 
 # This should align with the $kotlinVersion along the recommendation here:
 # https://github.com/Kotlin/kotlinx.html/releases
@@ -35,13 +35,26 @@ log4jVersion = "2.24.3"
 slf4Version = "2.0.17"
 
 
+# TODO: put links before all
+kotlinxSerializationVersion = "1.8.1"
+result4kVersion = "2.22.3.0"
+hikariCpVersion = "5.1.0"
+postgresqlVersion = "42.7.3"
+terpalSqlJdbcVersion = "2.0.0.PL-1.2.0"
+konformVersion = "0.11.0"
+junitVersion = "5.12.0"
+junitPlatformVersion = "1.12.2"
+assertjVersion = "3.26.3"
+
+
+
 [libraries]
 
 # Kotlin
 kotlinStdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib-jdk8", version.ref = "kotlinVersion" }
 
 # http4k (foundational web server libraries)
-http4kBom = { group = "org.http4k", name = "http4k-bom", version.ref = "http4k" }
+http4kBom = { group = "org.http4k", name = "http4k-bom", version.ref = "http4kVersion" }
 
 # Kotlinx.html (our HTML templating eDSL)
 kotlinxHtml = { group = "org.jetbrains.kotlinx", name = "kotlinx-html", version.ref = "kotlinXHtmlVersion" }
@@ -50,12 +63,34 @@ kotlinxHtmlJvm = { group = "org.jetbrains.kotlinx", name = "kotlinx-html-jvm", v
 # jjwtJackson = { group = "io.jsonwebtoken", name = "jjwt-jackson", version.ref = "jjwtVersion" }
 
 
-
 slf4jApi = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4Version" }
 slf4jSimple = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4Version" }
 log4jCore = { group = "org.apache.logging.log4j", name = "log4j-core", version.ref = "log4jVersion" }
 log4jSlf4j2Impl = { group = "org.apache.logging.log4j", name = "log4j-slf4j2-impl", version.ref = "log4jVersion" }
 kotlinLogging = { group = "io.github.oshai", name = "kotlin-logging-jvm", version = "7.0.7" }
+
+
+
+kotlinxSerializationCore = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-core", version.ref = "kotlinxSerializationVersion" }
+kotlinxSerializationJson = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerializationVersion" }
+result4k = { group = "dev.forkhandles", name = "result4k", version.ref = "result4kVersion" }
+hikariCp = { group = "com.zaxxer", name = "HikariCP", version.ref = "hikariCpVersion" }
+postgresql = { group = "org.postgresql", name = "postgresql", version.ref = "postgresqlVersion" }
+terpalSqlJdbc = { group = "io.exoquery", name = "terpal-sql-jdbc", version.ref = "terpalSqlJdbcVersion" }
+konform = { group = "io.konform", name = "konform", version.ref = "konformVersion" }
+
+# Test dependencies
+http4kTestingApproval = { group = "org.http4k", name = "http4k-testing-approval", version.ref = "http4kVersion" }
+http4kTestingHamkrest = { group = "org.http4k", name = "http4k-testing-hamkrest", version.ref = "http4kVersion" }
+junitJupiterApi = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.ref = "junitVersion" }
+junitJupiterEngine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "junitVersion" }
+junitPlatformLauncher = { group = "org.junit.platform", name = "junit-platform-launcher", version.ref = "junitPlatformVersion" }
+assertj = { group = "org.assertj", name = "assertj-core", version.ref = "assertjVersion" }
+
+
+
+
+
 
 
 # [bundles] # Only useful for sharing sets of dependencies sbetween (sub)projects

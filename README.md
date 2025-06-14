@@ -77,37 +77,51 @@ There's a custom task in the Grade file to print the sizes of the dependencies (
 I proudly show its output here:
 
 ```
-Configuration name: "implementationDependenciesMetadata"
-Total dependencies size:                                4.92 Mb
-
-postgresql-42.7.3.jar                               1,063.78 kb
-kotlinx-html-jvm-0.11.0.jar                           865.22 kb
-http4k-core-6.9.2.0.jar                               836.43 kb
-okhttp-4.12.0.jar                                     771.03 kb
-kotlinx-serialization-json-jvm-1.8.1.jar              270.48 kb
-http4k-realtime-core-6.9.2.0.jar                      198.30 kb
-kotlin-stdlib-2.1.20-all.jar                          188.35 kb
-HikariCP-5.1.0.jar                                    158.05 kb
-kotlin-logging-jvm-7.0.7.jar                          106.46 kb
-http4k-format-core-6.9.2.0.jar                         96.04 kb
-slf4j-api-2.0.17.jar                                   68.27 kb
-kotlinx-html-metadata-0.11.0.jar                       68.15 kb
-http4k-config-6.9.2.0.jar                              59.66 kb
-http4k-format-kotlinx-serialization-6.9.2.0.jar        56.52 kb
-kotlinx-serialization-core-metadata-1.8.1.jar          53.57 kb
-kotlinx-serialization-json-metadata-1.8.1.jar          42.05 kb
-okio-metadata-3.6.0-all.jar                            36.46 kb
-http4k-client-okhttp-6.9.2.0.jar                       28.90 kb
-result4k-2.22.3.0.jar                                  27.39 kb
-konform-metadata-0.11.0.jar                            19.92 kb
-slf4j-simple-2.0.17.jar                                15.35 kb
-terpal-runtime-metadata-2.1.0-2.0.0.PL.jar              6.83 kb
-kotlin-stdlib-jdk8-1.8.21.jar                           0.95 kb
-kotlin-stdlib-jdk7-1.8.21.jar                           0.94 kb
-terpal-sql-jdbc-metadata-2.0.0.PL-1.2.0.jar             0.63 kb
+  1683 KB  kotlin-stdlib-2.1.20.jar
+  1510 KB  kotlinx-coroutines-core-jvm-1.8.1.jar
+  1063 KB  postgresql-42.7.3.jar
+   865 KB  kotlinx-html-jvm-0.11.0.jar
+   836 KB  http4k-core-6.9.2.0.jar
+   771 KB  okhttp-4.12.0.jar
+   648 KB  kotlinx-datetime-jvm-0.6.0.jar
+   382 KB  kotlinx-serialization-core-jvm-1.8.1.jar
+   351 KB  okio-jvm-3.6.0.jar
+   288 KB  config-1.4.1.jar
+   270 KB  supabase-http4k.jar
+   270 KB  kotlinx-serialization-json-jvm-1.8.1.jar
+   246 KB  terpal-sql-core-jvm-2.0.0.PL-1.2.0.jar
+   225 KB  checker-qual-3.42.0.jar
+   198 KB  terpal-sql-jdbc-jvm-2.0.0.PL-1.2.0.jar
+   198 KB  http4k-realtime-core-6.9.2.0.jar
+   158 KB  HikariCP-5.1.0.jar
+   148 KB  konform-jvm-0.11.0.jar
+   106 KB  kotlin-logging-jvm-7.0.7.jar
+    96 KB  http4k-format-core-6.9.2.0.jar
+    68 KB  slf4j-api-2.0.17.jar
+    59 KB  http4k-config-6.9.2.0.jar
+    56 KB  http4k-format-kotlinx-serialization-6.9.2.0.jar
+    35 KB  atomicfu-jvm-0.23.1.jar
+    29 KB  annotations-24.1.0.jar
+    28 KB  http4k-client-okhttp-6.9.2.0.jar
+    27 KB  result4k-2.22.3.0.jar
+    22 KB  terpal-runtime-jvm-2.1.0-2.0.0.PL.jar
+    15 KB  slf4j-simple-2.0.17.jar
+     0 KB  kotlin-stdlib-jdk8-1.9.10.jar
+     0 KB  kotlin-stdlib-jdk7-1.9.10.jar
+---------------
+TOTAL: 11M build/distributions/supabase-http4k.tar
 ```
 
-5MB for a stack as featureful as this is an amazing feat.
+Which is the result of:
+
+```sh
+tar -tvf build/distributions/supabase-http4k.tar | \
+  awk '/.jar$/ {size=$3; split($6,path,"/"); jar=path[length(path)]; printf "%6d KB  %s\n", size/1024, jar;}' | \
+  sort -nr
+echo "\n---------------\nTOTAL:" $(ls -sh build/distributions/supabase-http4k.tar)
+```
+
+11MB (excluding the JVM) for a stack as featureful as this is an amazing feat!
 
 On my machine (Intel Core Ultra 7 155H) it:
 * compiles (`./gradlew clean; ./gradlew build -x test`) in 4 seconds,
@@ -115,7 +129,45 @@ On my machine (Intel Core Ultra 7 155H) it:
 * starts in ~300 ms.
 
 
-# TODO
+**TODO**: Make a custom JVM setup with `jlink`.
+Since the libraries are so minimalistic, I should be possible to reduce the size of JVM as well.
+This should result in small and fast loading Docker images.
+
+
+### Tech that did not make it
+
+In this endeavour to make a "dream stack" I also looked into other directions.
+
+I looked into Axum (on Rust), a very similar library-based web framework compared to http4k.
+But I found Rust to be hard to work with, harder than needed for the job-at-hand:
+this stack needs to perform well, but not "top percentile on the TechEmpower benchmark" well.
+Also, there were a lot of concepts to learn in Rust; that would slow down new hires w/o Rust experience.
+Kotlin, o.t.o.h, is straightforward to learn for those with previous statically-type OO experience.
+
+The Dream web framework (on OCaml) was also considered. But the ecosystem simply was not there yet.
+I want to move fast so libraries need to be readily available.
+Also, OCaml suffers --like Rust-- from a significantly steeper learning curve than Kotlin.
+
+Finally, on my programming language short list there was Gleam.
+Actually a really strong contender, but a little young. Will it still be available in 5 or 10 years?
+
+So Kotlin + http4k (the Kotlin-based webserver that works the way I want it to) it was.
+
+SQLDelight, Jdbi and `terpal-sql` were also compared.
+I found that SQLDelight --unlike the others-- did not allow me to use all of SQL, but only the subset they support.
+They also have trouble keeping their IntelliJ plugin up to date
+(their backing company does not devote the resources to it to keep it current).
+Jdbi and `terpal-sql` are truly "just SQL" libraries and thus allow me to write any SQL Postgres can handle.
+`terpal-sql` was BY FAR the smallest option in terms of added dependency size.
+Since it builds on `kotlinx.serialization` I have moved some other code over to use that JSON lib as well,
+so I could remove all Moshi/Jackson/kotlin-reflect usage, and drop the total stack size dramatically.
+
+I also did a shoot-out between JTE/KTE and `kotlinx.html`.
+While JTE/KTE is faster (both runtime and compile time), I found it to be clunky to use and hard to do true type-safety.
+So I ended up with `kotlinx.html`, I'll look into things to mitigate its slow (incremental) compile times.
+
+
+### TODO
 
 * walk through all flows again
 * implement some IP + extras logging in
