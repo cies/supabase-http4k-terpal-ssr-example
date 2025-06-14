@@ -21,6 +21,46 @@ private const val ANNUAL_TICKET_SALES = 122
 
 class FormParamDeserializerTest {
 
+  @Serializable
+  data class DefaultValueHoldingDto(val name: String = "TEST")
+
+  @Serializable
+  data class DealFormDto(
+    val closedById: Long? = 0,
+    val estimatedAnnualTicketSales: Int? = null,
+    @Serializable(with = LocalDateSerializer::class)
+    val startingDate: LocalDate? = null,
+    val isCustom: Boolean = false,
+    val isClone: Boolean = false,
+    val payoutFee: Int? = 85,
+    val chargebackFee: Int? = 500,
+    val userDiscount: Double? = 0.0,
+    val description: String? = null,
+    val paymentMethods: List<PaymentMethodDto>,
+    val dealTemplateId: Long? = null
+  )
+
+  @Serializable
+  data class PaymentMethodDto(
+    val id: Long,
+    val feeFixedInCents: Int?,
+    val feeVariablePercentage: Double?,
+  )
+
+  @OptIn(ExperimentalSerializationApi::class)
+  @Serializer(forClass = LocalDate::class)
+  object LocalDateSerializer : KSerializer<LocalDate> {
+    private val formatter = DateTimeFormatter.ISO_DATE
+
+    override fun serialize(encoder: Encoder, value: LocalDate) {
+      encoder.encodeString(value.format(formatter))
+    }
+
+    override fun deserialize(decoder: Decoder): LocalDate {
+      return LocalDate.parse(decoder.decodeString(), formatter)
+    }
+  }
+
   @Test
   fun deserialize_happyFlow() {
     val params = listOf(
@@ -88,48 +128,5 @@ class FormParamDeserializerTest {
     val dto: DefaultValueHoldingDto = Json{}.decodeFromJsonElement(deserialized)
     assertThat(dto).isNotNull
     assertThat(dto.name).isEqualTo("TEST")
-  }
-}
-
-@Serializable
-data class DefaultValueHoldingDto(val name: String = "TEST")
-
-@Serializable
-data class CalendarFeed(val name: String, val url: String)
-
-@Serializable
-data class DealFormDto(
-  val closedById: Long? = 0,
-  val estimatedAnnualTicketSales: Int? = null,
-  @Serializable(with = LocalDateSerializer::class)
-  val startingDate: LocalDate? = null,
-  val isCustom: Boolean = false,
-  val isClone: Boolean = false,
-  val payoutFee: Int? = 85,
-  val chargebackFee: Int? = 500,
-  val userDiscount: Double? = 0.0,
-  val description: String? = null,
-  val paymentMethods: List<PaymentMethodDto>,
-  val dealTemplateId: Long? = null
-)
-
-@Serializable
-data class PaymentMethodDto(
-  val id: Long,
-  val feeFixedInCents: Int?,
-  val feeVariablePercentage: Double?,
-)
-
-@OptIn(ExperimentalSerializationApi::class)
-@Serializer(forClass = LocalDate::class)
-object LocalDateSerializer : KSerializer<LocalDate> {
-  private val formatter = DateTimeFormatter.ISO_DATE
-
-  override fun serialize(encoder: Encoder, value: LocalDate) {
-    encoder.encodeString(value.format(formatter))
-  }
-
-  override fun deserialize(decoder: Decoder): LocalDate {
-    return LocalDate.parse(decoder.decodeString(), formatter)
   }
 }

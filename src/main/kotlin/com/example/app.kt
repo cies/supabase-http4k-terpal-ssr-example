@@ -4,6 +4,7 @@ import com.example.db.DbCtx
 import com.example.filter.htmlErrorStyler
 import com.example.html.template.error.handleException
 import com.example.lib.jwt.JwtData
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.util.UUID
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -23,6 +24,8 @@ import org.http4k.lens.uri
 import org.http4k.server.SunHttp
 import org.http4k.server.asServer
 
+
+private val log = KotlinLogging.logger {}
 
 val supabaseBaseUrl = EnvironmentKey.uri().required("SUPABASE_BASEURL")
 val supabaseJwtSecret = EnvironmentKey.secret().required("SUPABASE_JWT_SECRET")
@@ -82,7 +85,8 @@ val app: HttpHandler = ServerFilters.CatchAll(::handleException)
   .then(mainRouter)
 
 fun main() {
+  log.info { "Starting server" }
   val server = app.asServer(SunHttp(8080)).start()
-  println("Server started on port " + server.port())
+  log.info { "Server started on port " + server.port() }
 }
 
