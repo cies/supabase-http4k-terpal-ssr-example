@@ -46,7 +46,7 @@ junitVersion = "5.12.0"
 junitPlatformVersion = "1.12.2"
 assertjVersion = "3.26.3"
 kotlinLoggingVersion = "7.0.7"
-
+konsistVersion = "0.17.3"
 
 
 [libraries]
@@ -86,7 +86,7 @@ junitJupiterApi = { group = "org.junit.jupiter", name = "junit-jupiter-api", ver
 junitJupiterEngine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "junitVersion" }
 junitPlatformLauncher = { group = "org.junit.platform", name = "junit-platform-launcher", version.ref = "junitPlatformVersion" }
 assertj = { group = "org.assertj", name = "assertj-core", version.ref = "assertjVersion" }
-
+konsist = { group = "com.lemonappdev", name = "konsist", version.ref = "konsistVersion" }
 
 # [bundles] # Only useful for sharing sets of dependencies sbetween (sub)projects
 

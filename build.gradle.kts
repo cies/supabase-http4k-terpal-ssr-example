@@ -109,4 +109,5 @@ dependencies {
   testImplementation(libs.junitJupiterEngine)
   testImplementation(libs.junitPlatformLauncher)
   testImplementation(libs.assertj)
+  testImplementation(libs.konsist) // For architecture tests, among others features
 }

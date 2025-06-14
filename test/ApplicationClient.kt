@@ -1,5 +1,3 @@
-package com.example
-
 import org.http4k.client.OkHttp
 import org.http4k.core.HttpHandler
 import org.http4k.core.Method.GET
