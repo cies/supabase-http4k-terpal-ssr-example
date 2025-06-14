@@ -81,18 +81,22 @@ dependencies {
 
   implementation(libs.result4k) // a nice Result type (basically `Either` in Haskell)
 
+  // DB access
   implementation(libs.hikariCp)
   implementation(libs.postgresql)
   api(libs.terpalSqlJdbc) {
-    exclude(group = "org.xerial", module = "sqlite-jdbc") // 13MB we do not use (TODO: make issue in terpal-sql)
+    exclude(group = "org.xerial", module = "sqlite-jdbc") // 13MB we do not use
+    // One day maybe also exclude coroutines :)
   }
 
   // Kotlinx.html (our HTML templating eDSL)
   implementation(libs.kotlinxHtml) // the API
   implementation(libs.kotlinxHtmlJvm) // JVM implementation
 
-  implementation(libs.konform) // for validation
+  // Validation
+  implementation(libs.konform)
 
+  // Logging
   implementation(libs.kotlinLogging) // a nice Kotlinesque wrapper
   implementation(libs.slf4jApi) // the facade API
   implementation(libs.slf4jSimple) // a super simple logging implementation (log4j-core is nearly 2MB)
