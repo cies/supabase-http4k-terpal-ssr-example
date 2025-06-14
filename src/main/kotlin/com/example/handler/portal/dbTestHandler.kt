@@ -9,7 +9,7 @@ import org.http4k.core.Response
 import org.http4k.core.Status.Companion.OK
 
 
-fun jdbiTestHandler(req: Request): Response {
+fun dbTestHandler(req: Request): Response {
   val dbctx = dbContextKey(req)
 
   val orgs = runBlocking { dbctx.listOrganizations() }

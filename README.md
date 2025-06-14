@@ -7,7 +7,7 @@ Dream stack.
 * Kotlin — Beautiful language that anyone with typed OO experience (Java, C#, C++, modern PHP/Ruby/Python) can learn in a weekend. Lift on Java's ecosystem for heavy-lifting. Better culture than Java wrt type-safety.
 * http4k — The same architectural model as Rails+Rack (Ruby), or Axum+Tower (Rust) or <many other> use, well implemented in as a bunch of libs Kotlin. Very modular. Very pluggable.
 * kotlinx.html — Write HTML templates in Kotlin's DSL syntax, adds type safety where possible.
-* Jdbi — Conveniently keep queries in separate SQL files. Does not interfere with SQL code at all (not an ORM or query builder), so 100% "just SQL". (Might want to replace this one day with terpal-sql, once it's a bit more mature.)
+* terpal-sql — Does not interfere with SQL code at all (not an ORM or query builder), so 100% "just SQL". (Similar to Jdbi or JDBC.)
 
 The idea is to have Supabase with all it's value ready to be used directly from the browser if needed, while being able to start of with a traditional SSR application.
 This because SSR is less expensive to implement than an SPA. SPAs force one to manage state twice and reimplement lots of browser features in JS (back/forward button behaviour, while remembering scroll/form state, etc.).

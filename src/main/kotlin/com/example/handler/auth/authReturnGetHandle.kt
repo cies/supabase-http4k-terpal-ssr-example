@@ -34,7 +34,7 @@ fun authReturnGetHandler(reg: Request): Response {
         document.cookie = `sb-access-token="${'$'}{params.get('access_token')}"; expires=${'$'}{expiresAt.toUTCString()}; path=/; Secure; SameSite=Strict`;
         document.cookie = `sb-refresh-token="${'$'}{params.get('refresh_token')}"; expires=${'$'}{expiresAt.toUTCString()}; path=/; Secure; SameSite=Strict`;
         if (params.get('access_token')) {
-          window.location.href = "${Paths.jdbi.absolutePath()}";
+          window.location.href = "${Paths.db.absolutePath()}";
         }
       })();
     </script>

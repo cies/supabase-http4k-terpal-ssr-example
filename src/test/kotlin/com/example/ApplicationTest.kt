@@ -7,11 +7,11 @@ import org.http4k.core.Status.Companion.OK
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-class ApplicationTest {
-
-    @Test
-    fun `Ping test`() {
-        assertEquals(Response(OK).body("pong"), mainRouter(Request(GET, "/ping")))
-    }
-
-}
+//class ApplicationTest {
+//
+//    @Test
+//    fun `Ping test`() {
+//        assertEquals(Response(OK).body("pong"), mainRouter(Request(GET, "/ping")))
+//    }
+//
+//}

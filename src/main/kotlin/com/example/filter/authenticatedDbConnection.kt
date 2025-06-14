@@ -41,7 +41,7 @@ val dbctx: DbCtx = TerpalDriver.Postgres(dataSource)
  * Important http4k `Filter` which:
  *   - Initializes a JDBI Handle (`db`), and closes it on response completion (possibly by an error).
  *   - Adds the db (`Handle`) to the request with the RequestKey mechanism.
- *   - Sets Supabase compatible role and claims from JWT (that should have been added by RequestKey in a previous filter). TODO
+ *   - Sets Supabase compatible role and claims from JWT (that should have been added by RequestKey in a previous filter).
  *   - Resets the Supabase role and claims after the requests has finished (so it can be returned safely to the connection pool).
  * It does NOT open (BEGIN) and close (COMMIT) a transaction, because:
  *   - Over use of transactions results in many locks being kept longer.
@@ -51,16 +51,9 @@ val dbctx: DbCtx = TerpalDriver.Postgres(dataSource)
  * We prefer the programmer makes explicit transactions where they are needed (transactions can be nested),
  * instead of implicitly wrapping everything in transactions.
  */
-fun authenticatedJdbiInitializer(dbContextKey: RequestLens<DbCtx>, authedQueryCache: RequestLens<String>) =
+fun authenticatedDbConnection(dbContextKey: RequestLens<DbCtx>, authedQueryCache: RequestLens<String>) =
   Filter { next ->
     {
-//      dbctx.
-//      // Open a Jdbi [Handle]: a db connection gets taken from the pool.
-//      dbctx.database.connection.use { jdbc ->
-//          jdbc.prepareStatement("drop table if exists test_tasks").execute()
-//          jdbc.prepareStatement("create table test_tasks (id serial primary key, name text not null)").execute()
-//        }
-
       // Get auth details (JWT) from the request context and set them auth details on the Jdbi [Handle].
       val authedQueryForCache = renderSetSupabaseAuthToAuthenticatedUserQuery(jwtContextKey(it))
       dbctx.setSupabaseAuthToAuthenticatedUser(authedQueryForCache)

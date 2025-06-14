@@ -47,8 +47,9 @@ class FormParamDeserializerTest {
       ".paymentMethods[3].feeVariablePercentage" to ""
     )
 
-    val deserialized = deserialize(params).valueOrNull() ?: throw AssertionError("Deserialization failed")
-    val dealFormDto: DealFormDto = Json{}.decodeFromJsonElement(deserialized)
+    val dealFormDto: DealFormDto = params.decodeOrFailWith { reason ->
+      throw AssertionError("Deserialization failed: $reason")
+    }
     assertThat(dealFormDto.isClone).isFalse
     assertThat(dealFormDto.isCustom).isFalse
     assertThat(dealFormDto.userDiscount).isEqualTo(20.0)
@@ -66,7 +67,7 @@ class FormParamDeserializerTest {
       "stuff" to "fakeStuff"
     )
     // Keys have to start with `.` or `[`. Filter them out first if you have a mixed bag of keys at hands.
-    assertThat(deserialize(params)).isInstanceOf(Failure::class.java)
+    assertThat(formToJsonElement(params)).isInstanceOf(Failure::class.java)
   }
 
   /** A param starting with a `[` should be valid, but this one isn't in CalendarFeedDto, so it can't deserialize. */
@@ -77,13 +78,13 @@ class FormParamDeserializerTest {
       ".url" to URL,
       "[0].stuff" to "fakeStuff"
     )
-    assertThat(deserialize(params)).isInstanceOf(Failure::class.java)
+    assertThat(formToJsonElement(params)).isInstanceOf(Failure::class.java)
   }
 
   @Test
   fun deserialize_emptyListToDefaults() {
     val params = listOf<Pair<String, String?>>()
-    val deserialized = deserialize(params).valueOrNull() ?: throw AssertionError("Deserialization failed")
+    val deserialized = formToJsonElement(params).valueOrNull() ?: throw AssertionError("Deserialization failed")
     val dto: DefaultValueHoldingDto = Json{}.decodeFromJsonElement(deserialized)
     assertThat(dto).isNotNull
     assertThat(dto.name).isEqualTo("TEST")
@@ -115,9 +116,8 @@ data class DealFormDto(
 @Serializable
 data class PaymentMethodDto(
   val id: Long,
-  val name: String,
   val feeFixedInCents: Int?,
-  val feeVariablePercentage: Double,
+  val feeVariablePercentage: Double?,
 )
 
 @OptIn(ExperimentalSerializationApi::class)

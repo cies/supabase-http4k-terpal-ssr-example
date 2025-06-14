@@ -37,12 +37,11 @@ private val NAME_SPLITTER = "(?=\\.)|(?=\\[)".toRegex()
 // this class does not coerce the values (it does not know what to coerce them to), so all values
 // resulting from transposing a form submission to JSON are of type string.
 //
-// Some behavior: last value wins (and since the order of a Map is undetermined, the last is
-// not known at compile time), array indexes need to be of int >= 0, if array indexes leave gaps,
-// they are filled with nulls.
+// Some behavior: last value wins, array indexes need to be of int >= 0, if array indexes leave gaps,
+// they are filled with null entries.
 //
-// The output of the [deserialize] method (a Jackson-internal JSON representation) can then be used to do
-// the actual mapping to a DTO.
+// The success result of the [deserialize] method (a kotlinx.serialization-internal JSON representation)
+// can then be used to map to a DTO.
 
 
 /**
@@ -55,7 +54,7 @@ private val NAME_SPLITTER = "(?=\\.)|(?=\\[)".toRegex()
  *
  * The type of [pairs] matches the type of form submissions as exposed by [http4k](https://http4k.org).
  */
-fun deserialize(pairs: List<Pair<String, String?>>): Result<JsonElement, String> {
+fun formToJsonElement(pairs: List<Pair<String, String?>>): Result<JsonElement, String> {
   var rootNode = JsonObject(emptyMap())
   pairs.forEach { (name, value) ->
     val splitName = name.split(NAME_SPLITTER)
@@ -66,9 +65,7 @@ fun deserialize(pairs: List<Pair<String, String?>>): Result<JsonElement, String>
     val taggedSegments = splitName
       .drop(1) // Since proper names start with a delimiter
       .map {
-        if (it.length < 2) {
-          return Failure("Zero length segment in: $name")
-        }
+        if (it.length < 2) return Failure("Zero length segment in: $name")
         // Next we remove tailing `]`, but keep the prefixing `.` or `[` which we call this the segment's "tag".
         if (it.startsWith(OPEN_BRACKET)) it.dropLast(1) else it
       }
@@ -77,7 +74,7 @@ fun deserialize(pairs: List<Pair<String, String?>>): Result<JsonElement, String>
       rootNode = when (jsonResult) {
         is Success -> when (jsonResult.value) {
           is JsonObject -> jsonResult.value as JsonObject
-          else -> return Failure("Got weird value ${jsonResult.value}")
+          else -> return Failure("The root must be a JsonObject, got: ${jsonResult.value::class.simpleName}")
         }
 
         is Failure -> return jsonResult
@@ -103,8 +100,8 @@ fun deserialize(pairs: List<Pair<String, String?>>): Result<JsonElement, String>
  * strings (the tag is the first char: `.` or `[`).
  * @param segmentIndex The index of the current segment in the [taggedSegments] list.
  * @param value The [value] of the form's input field.
- * @return A [FormToMoshiInputResult] containing the [JsonNode] tree as resulted from this parsing step (either an
- * [ObjectNode] or an [ArrayNode]), or alternatively an error message in case we could not parse the input.
+ * @return In case of success a [JsonElement] (kotlinx.serialization-internal JSON representation),
+ * or in case of failure an error message in case we could not parse the input.
  */
 private fun normalizeToJson(
   parentMap: JsonElement?,
@@ -122,7 +119,8 @@ private fun normalizeToJson(
     DOT -> {
       val (currentObject: JsonObject, nextNode: JsonElement?) = when (parentMap) {
         is JsonObject -> Pair(parentMap, parentMap[currentSegment])
-        // If `parent` is NullNode, TextNode, ArrayNode or `null`: simply replace it (last one wins).
+        is JsonArray -> return Failure("Should not happen (currently looking into a 'DOT' JsonObject)")
+        // If `parent` is JsonNull, JsonPrimitive or `null`: simply replace it (last one wins).
         else -> Pair(JsonObject(emptyMap()), JsonNull)
       }
       when (val result = normalizeToJson(nextNode, taggedSegments, segmentIndex + 1, value)) {
@@ -142,8 +140,9 @@ private fun normalizeToJson(
       if (index < 0) return Failure("Expected integer > 0, got $index")
 
       val (currentArray: JsonArray, nextNode: JsonElement) = when (parentMap) {
-        is JsonArray -> Pair(parentMap, parentMap[index])
-        // If `parent` is ObjectNode, NullNode, TextNode or `null`: simply replace it (last one wins).
+        is JsonArray -> Pair(parentMap, if (parentMap.size > index) parentMap[index] else JsonNull)
+        is JsonObject -> return Failure("Should not happen (currently looking into a 'OPEN_BRACKET' JsonArray)")
+        // If `parent` is JsonNull, JsonPrimitive or `null`: simply replace it (last one wins).
         else -> Pair(JsonArray(emptyList()), JsonNull)
       }
       when (val jsonResult = normalizeToJson(nextNode, taggedSegments, segmentIndex + 1, value)) {
@@ -165,7 +164,7 @@ fun nullPaddedAddToArray(initialArray: JsonArray?, index: Int, value: JsonElemen
   val array: JsonArray = (initialArray ?: JsonArray(listOf()))
   if (index < 0) return array // ignore index < 0
   val internalArray = array.toMutableList()
-  if (index > internalArray.size) {
+  if (index >= internalArray.size - 1) {
     (internalArray.size..index).forEach { _ ->
       @OptIn(ExperimentalSerializationApi::class)
       internalArray.add(JsonNull) // pad with nulls if needed

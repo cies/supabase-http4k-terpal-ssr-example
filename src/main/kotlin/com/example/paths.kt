@@ -37,8 +37,8 @@ data object Paths {
     UrlPath("/portal")
   val metrics =
     UrlPath(portal, "/metrics")
-  val jdbi =
-    UrlPath(portal, "/jdbi")
+  val db =
+    UrlPath(portal, "/db")
   val reseed =
     UrlPath(portal, "/reseed")
 }

@@ -1,13 +1,13 @@
 package com.example
 
-import com.example.filter.authenticatedJdbiInitializer
+import com.example.filter.authenticatedDbConnection
 import com.example.filter.cookieBasedJwtAuthenticator
 import com.example.handler.auth.authReturnGetHandler
 import com.example.handler.auth.requestPasswordResetPostHandler
 import com.example.handler.auth.signUpPostHandler
 import com.example.handler.auth.signInPostHandler
 import com.example.handler.auth.signOutPostHandler
-import com.example.handler.portal.jdbiTestHandler
+import com.example.handler.portal.dbTestHandler
 import com.example.handler.portal.reseedDbHandler
 import com.example.html.template.passwordreset.RequestPasswordResetForm
 import com.example.html.template.passwordreset.requestPasswordResetPage
@@ -27,7 +27,7 @@ import org.http4k.routing.routes
 import org.http4k.routing.static
 
 val portalRouter = routes(
-  Paths.jdbi.template() bind GET to ::jdbiTestHandler,
+  Paths.db.template() bind GET to ::dbTestHandler,
   Paths.reseed.template() bind GET to ::reseedDbHandler,
   Paths.metrics.template() bind GET to { req -> Response(OK).body("Example metrics route") }
 )
@@ -66,7 +66,7 @@ val mainRouter = routes(
   // ### The portal sub-router (with its own additional filter stack)
 
   Paths.portal.template() bind cookieBasedJwtAuthenticator(jwtContextKey, userUuidContextKey)
-    .then(authenticatedJdbiInitializer(dbContextKey, authedQueryCacheContextKey))
+    .then(authenticatedDbConnection(dbContextKey, authedQueryCacheContextKey))
     .then(portalRouter),
 
 

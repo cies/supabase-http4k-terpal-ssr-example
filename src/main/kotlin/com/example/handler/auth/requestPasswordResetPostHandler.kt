@@ -4,7 +4,7 @@ import com.example.env
 import com.example.html.template.passwordreset.RequestPasswordResetForm
 import com.example.html.template.passwordreset.passwordResetLinkMaybeSentPage
 import com.example.html.template.passwordreset.requestPasswordResetPage
-import com.example.lib.formparser.deserialize
+import com.example.lib.formparser.formToJsonElement
 import com.example.lib.supabase.client
 import com.example.supabaseBaseUrl
 import com.example.supabaseServiceRoleKey
@@ -26,7 +26,7 @@ import org.http4k.core.body.form
 private val log = KotlinLogging.logger {}
 
 fun requestPasswordResetPostHandler(req: Request): Response {
-  val deserialized = deserialize(req.form()).valueOrNull() ?: throw AssertionError("Deserialization failed")
+  val deserialized = formToJsonElement(req.form()).valueOrNull() ?: throw AssertionError("Deserialization failed")
   val formDto: RequestPasswordResetForm = Json{}.decodeFromJsonElement(deserialized)
     ?: return Response(BAD_REQUEST)
 
