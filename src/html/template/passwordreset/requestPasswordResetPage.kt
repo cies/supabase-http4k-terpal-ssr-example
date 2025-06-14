@@ -25,7 +25,7 @@ fun requestPasswordResetPage(formContent: RequestPasswordResetForm, validatedFor
         +"It will take you to a form by which you can set a new password for your account."
       }
       validationErrorBox(validatedForm)
-      form(Paths.requestPasswordReset.path(), method = FormMethod.post) {
+      form(Paths.requestPasswordReset.pathSegment(), method = FormMethod.post) {
         p {
           label {
             +"Email address"

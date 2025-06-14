@@ -17,7 +17,7 @@ fun signInPage(formContent: SignInForm, validatedForm: ValidationResult<SignInFo
         +"Sign in to the portal"
       }
       validationErrorBox(validatedForm)
-      form(Paths.signIn.path(), method = FormMethod.post) {
+      form(Paths.signIn.pathSegment(), method = FormMethod.post) {
         input(InputType.hidden) {
           name = toNameString(SignInForm::target)
           value = formContent.target ?: ""
@@ -52,7 +52,7 @@ fun signInPage(formContent: SignInForm, validatedForm: ValidationResult<SignInFo
         }
       }
       a {
-        href = Paths.requestPasswordReset.absolutePath()
+        href = Paths.requestPasswordReset.path()
         +"Forgot password"
       }
     }

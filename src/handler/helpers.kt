@@ -13,7 +13,7 @@ fun redirectAfterFormSubmission(location: String) = Response(SEE_OTHER).header("
  * But doing so has bad UX (browsers do not deal with this nicely). So 302 it is (most big players do this).
  */
 fun redirectToSignIn(reason: SignInReason, targetPath: String) = Response(FOUND)
-  .header("Location", Paths.signIn.path() + "?reason=${reason.name}&target=${targetPath.urlEncoded()}")
+  .header("Location", Paths.signIn.pathSegment() + "?reason=${reason.name}&target=${targetPath.urlEncoded()}")
 
 enum class SignInReason {
   InvalidAuthToken,

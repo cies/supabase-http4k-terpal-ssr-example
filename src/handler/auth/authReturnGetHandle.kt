@@ -27,14 +27,14 @@ fun authReturnGetHandler(reg: Request): Response {
         const params = new Map(new URLSearchParams(hashLessUrlEncodedPairs));
         console.log(params);
         if (params.get('error_code') === 'opt_expired') {
-          window.location.href = "${Paths.optExpired.absolutePath()}";
+          window.location.href = "${Paths.optExpired.path()}";
         }
         var expiresAt = new Date(0); // The 0 there is important
         expiresAt.setUTCSeconds(params.get('expires_at'));
         document.cookie = `sb-access-token="${'$'}{params.get('access_token')}"; expires=${'$'}{expiresAt.toUTCString()}; path=/; Secure; SameSite=Strict`;
         document.cookie = `sb-refresh-token="${'$'}{params.get('refresh_token')}"; expires=${'$'}{expiresAt.toUTCString()}; path=/; Secure; SameSite=Strict`;
         if (params.get('access_token')) {
-          window.location.href = "${Paths.db.absolutePath()}";
+          window.location.href = "${Paths.db.path()}";
         }
       })();
     </script>

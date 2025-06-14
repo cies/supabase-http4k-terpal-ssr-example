@@ -34,7 +34,7 @@ fun signInPostHandler(req: Request): Response {
       when (val signInResult = fetchSupabaseTokens(formDto.email ?: "", formDto.password ?: "")) {
         is Success -> {
           val (accessTokenCookie, refreshTokenCookie) = signInResult.value.toCookies()
-          val target = formDto.target ?: Paths.db.absolutePath()
+          val target = formDto.target ?: Paths.db.path()
           return redirectAfterFormSubmission(target).cookie(accessTokenCookie).cookie(refreshTokenCookie)
         }
 

@@ -47,7 +47,7 @@ fun signUpPostHandler(req: Request): Response {
           when (val signInResult = fetchSupabaseTokens(formDto.email, formDto.password)) {
             is Success -> {
               val (accessTokenCookie, refreshTokenCookie) = signInResult.value.toCookies()
-              return redirectAfterFormSubmission(Paths.db.absolutePath())
+              return redirectAfterFormSubmission(Paths.db.path())
                 .cookie(accessTokenCookie)
                 .cookie(refreshTokenCookie)
             }
@@ -55,7 +55,7 @@ fun signUpPostHandler(req: Request): Response {
             is Failure -> {
               return if (signInResult.reason.errorCode == "email_not_confirmed") {
                 // In this case the user has been sent a validation email
-                redirectAfterFormSubmission(Paths.verificationEmailSent.absolutePath())
+                redirectAfterFormSubmission(Paths.verificationEmailSent.path())
               } else {
                 val invalidResult = Invalid.of(ValidationPath(listOf()), signInResult.reason.errorCode)
                 signUpPage(formDto, invalidResult)

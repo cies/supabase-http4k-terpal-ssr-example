@@ -23,7 +23,7 @@ fun signUpPage(formContent: SignUpForm, validatedForm: ValidationResult<SignUpFo
         +"After submitting the form we will send a verification email to the address to ensure it belongs to you."
       }
       validationErrorBox(validatedForm)
-      form(Paths.signUp.path(), method = FormMethod.post) {
+      form(Paths.signUp.pathSegment(), method = FormMethod.post) {
         p {
           label {
             +"Email address"

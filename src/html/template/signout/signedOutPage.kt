@@ -20,7 +20,7 @@ fun signedOutPage(wasSignedIn: Boolean): Response {
       p {
         +"If you want to sign-in you can do so with the "
         a {
-          href = Paths.signIn.path()
+          href = Paths.signIn.pathSegment()
           +"sign-in form"
         }
         +"."
