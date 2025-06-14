@@ -22,9 +22,24 @@ Does not interfere with SQL code at all (not an ORM or query builder), so 100% "
 
 The idea is to have Supabase with all the value it brings to the table ready to be used directly from the browser if needed,
 while being able to start of with a traditional SSR application.
-This because SSR is less expensive to implement than an SPA.
+This is because SSR is less expensive to implement than an SPA.
 SPAs force one to manage the state twice and reimplement lots of browser features in JS
 (back/forward button behaviour, while remembering scroll/form state, etc.).
+
+
+### Custom functionality
+
+Not all functionality is taken from libraries. A small bit is custom for this project, namely:
+
+* **A form parsing library** (`/src/lib/formparser`) — http4k does not have it, but many frameworks do:
+a small language for form "key" so we can create structure in forms.
+This type of KV-entries `.user.addresses[2].countryCode=NL` are used to fill nested form backing DTOs.
+* **A way for specifying and handling the application's paths** (`/src/paths.kt`) — Somewhat type-safe paths.
+The Krouton (with type-safe path parameters) library was evaluated, but is made things harder.
+This approach is avery simple and at least makes changing paths easy later on, and truly connects paths to the application in code.
+* **A supabase client** (`/src/lib/supabase`) — `supabase-kt` is nice, but very much tailored for client side.
+We only need a few endpoints. And it came with a lot of dependencies. So... we rolled our own.
+* **A JWT parser** (`src/lib/jwt`) — the use case is super simple (understand Supabase's JWTs), no need to rope in huge libraries for that.
 
 
 ### Authentication
@@ -171,4 +186,3 @@ So I ended up with `kotlinx.html`, I'll look into things to mitigate its slow (i
 
 * walk through all flows again
 * implement some IP + extras logging in
-* look into using "arch tests"
