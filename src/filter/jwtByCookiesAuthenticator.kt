@@ -93,7 +93,7 @@ private fun authenticateOrRedirectToSignIn(
   }
 }
 
-private fun Request.accessTokenFromCookie(): String? = this.tokenFromCookieWithName("sb-access-token")
+fun Request.accessTokenFromCookie(): String? = this.tokenFromCookieWithName("sb-access-token")
 private fun Request.refreshTokenFromCookie(): String? = this.tokenFromCookieWithName("sb-refresh-token")
 private fun Request.tokenFromCookieWithName(cookieName: String): String? =
   this.cookies().firstOrNull { cookie -> cookie.name == cookieName }?.value

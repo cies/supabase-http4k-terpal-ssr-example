@@ -184,5 +184,5 @@ So I ended up with `kotlinx.html`, I'll look into things to mitigate its slow (i
 
 ### TODO
 
-* walk through all flows again
+* implement some tests
 * implement some IP + extras logging in

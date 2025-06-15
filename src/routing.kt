@@ -2,6 +2,7 @@ import filter.authenticatedDbConnection
 import filter.cookieBasedJwtAuthenticator
 import handler.auth.authReturnGetHandler
 import handler.auth.requestPasswordResetPostHandler
+import handler.auth.signInGetHandler
 import handler.auth.signUpPostHandler
 import handler.auth.signInPostHandler
 import handler.auth.signOutPostHandler
@@ -37,9 +38,7 @@ val mainRouter = routes(
   Paths.ping.template() bind GET to { Response(OK).body("pong") },
   Paths.signUp.template() bind GET to { signUpPage(SignUpForm.empty(), Valid(SignUpForm.empty())) },
   Paths.signUp.template() bind POST to ::signUpPostHandler,
-  Paths.signIn.template() bind GET to { req ->
-    signInPage(SignInForm.empty().copy(target = req.query("target")), Valid(SignInForm.empty()))
-  },
+  Paths.signIn.template() bind GET to ::signInGetHandler,
   Paths.signIn.template() bind POST to ::signInPostHandler,
   Paths.signOut.template() bind GET to ::signOutPostHandler, // Just for convenience: using POST here is the correct approach.
   Paths.signOut.template() bind POST to ::signOutPostHandler,

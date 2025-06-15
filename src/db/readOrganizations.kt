@@ -1,13 +1,13 @@
 package db
 
 import io.exoquery.sql.Sql
-import io.exoquery.sql.runOn
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 import kotlinx.serialization.Serializable
+import lib.blockingterpal.runOn
 
 
-suspend fun DbCtx.listOrganizations() =
+fun DbCtx.listOrganizations() =
   Sql("SELECT * FROM organization").queryOf<Organization>().runOn(this)
 
 @OptIn(ExperimentalUuidApi::class)

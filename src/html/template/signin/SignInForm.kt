@@ -11,7 +11,7 @@ import kotlinx.serialization.Serializable
 data class SignInForm(
   val email: String?,
   val password: String?,
-  val rememberMe: Boolean = true,
+  val rememberMe: Boolean = false,
   val target: String? = null
 ) {
 

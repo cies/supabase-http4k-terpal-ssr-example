@@ -10,6 +10,7 @@ import kotlinx.serialization.json.Json
 import org.http4k.config.Environment
 import org.http4k.config.EnvironmentKey
 import org.http4k.config.Secret
+import org.http4k.config.enum
 import org.http4k.core.HttpHandler
 import org.http4k.core.Uri
 import org.http4k.core.then
@@ -25,6 +26,9 @@ import org.http4k.server.asServer
 
 private val log = KotlinLogging.logger {}
 
+enum class AppMode { DEV, PROD, TEST }
+
+val appMode = EnvironmentKey.enum<AppMode>(caseSensitive = false).required("APP_MODE")
 val supabaseBaseUrl = EnvironmentKey.uri().required("SUPABASE_BASEURL")
 val supabaseJwtSecret = EnvironmentKey.secret().required("SUPABASE_JWT_SECRET")
 val supabaseServiceRoleKey = EnvironmentKey.string().required("SUPABASE_SERVICE_ROLE_KEY") // make Secret (but then use only once)
@@ -33,6 +37,7 @@ val supabasePostgresUsername = EnvironmentKey.string().required("SUPABASE_POSTGR
 val supabasePostgresPassword = EnvironmentKey.secret().required("SUPABASE_POSTGRES_PASSWORD")
 
 private val defaultConfig = Environment.defaults(
+  appMode of AppMode.PROD,
   supabaseBaseUrl of Uri.of("http://localhost:8080"),
   supabasePostgresUrl of Uri.of("postgresql://127.0.0.1:54322/postgres"),
   supabasePostgresUsername of "postgres",
