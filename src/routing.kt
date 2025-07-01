@@ -6,7 +6,9 @@ import handler.auth.signInGetHandler
 import handler.auth.signInPostHandler
 import handler.auth.signOutPostHandler
 import handler.auth.signUpPostHandler
-import handler.portal.dashboardHandler
+import handler.portal.dashboardHandler1
+import handler.portal.dashboardHandler2
+import handler.portal.dashboardHandler3
 import handler.portal.dbTestHandler
 import handler.portal.reseedDbHandler
 import handler.redirectTo
@@ -29,7 +31,10 @@ import org.http4k.routing.routes
 import org.http4k.routing.static
 
 val portalRouter = routes(
-  Paths.dashboard bind GET to ::dashboardHandler,
+  Paths.dashboard bind GET to ::dashboardHandler1,
+  Paths.dashboard1 bind GET to ::dashboardHandler1,
+  Paths.dashboard2 bind GET to ::dashboardHandler2,
+  Paths.dashboard3 bind GET to ::dashboardHandler3,
   Paths.db bind GET to ::dbTestHandler,
   Paths.reseed bind GET to ::reseedDbHandler,
 )

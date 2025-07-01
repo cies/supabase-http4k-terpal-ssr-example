@@ -19,7 +19,7 @@ fun signInPage(formContent: SignInForm, validatedForm: ValidationResult<SignInFo
         div("flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8") {
           // Logo
           a(classes = "block") {
-            href = "{{ route('dashboard') }}"
+            href = Paths.root.path()
             // logo svg
           }
         }

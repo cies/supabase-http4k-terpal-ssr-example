@@ -1,7 +1,15 @@
 package html.layout
 
 import domain.menu.navigationTree
+import html.backArrow
 import html.component.alpineDropdownAttributes
+import html.darkModeIcon
+import html.smallDropDownIcon
+import html.expandOrCollapseMenuGroupArrow
+import html.expandOrCollapseSidebarArrow
+import html.hamburgerIcon
+import html.lightModeIcon
+import html.notificationsIcon
 import kotlin.text.Typography.nbsp
 import kotlinx.html.*
 
@@ -53,6 +61,7 @@ inline fun HTML.portalLayout(
         attributes["defer"] = "true"
       }
     }
+    // The JS code that makes the dark-mode switch work.
     script {
       unsafe {
         +"""
@@ -109,6 +118,7 @@ inline fun HTML.portalLayout(
     attributes["x-data"] = "{ sidebarOpen: false, sidebarExpanded: localStorage.getItem('sidebar-expanded') == 'true' }"
     attributes["x-init"] = "\$watch('sidebarExpanded', value => localStorage.setItem('sidebar-expanded', value))"
 
+    // The JS code that makes the sidebar expandable/collapsable (only available at the mobile breakpoint).
     script {
       unsafe {
         +"""
@@ -149,13 +159,7 @@ inline fun HTML.portalLayout(
               attributes["x-bind:aria-expanded"] = "sidebarOpen"
 
               span("sr-only") { +"Close sidebar" }
-              unsafe {
-                +"""
-                <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M10.7 18.7l1.4-1.4L7.8 13H20v-2H7.8l4.3-4.3-1.4-1.4L4 12z" />
-                </svg>
-              """.trimIndent()
-              }
+              unsafe { +backArrow }
             }
             // Logo
             a(classes = "block") {
@@ -167,15 +171,15 @@ inline fun HTML.portalLayout(
           div("space-y-8") {
             // Pages group
             div {
-              h3("text-xs uppercase text-gray-400 dark:text-gray-500 font-semibold pl-3") {
-                span("hidden lg:block lg:sidebar-expanded:hidden 2xl:hidden text-center w-6") {
-                  attributes["aria-hidden"] = "true"
-                  +"•••"
-                }
-                span("lg:hidden lg:sidebar-expanded:block 2xl:block") {
-                  +"Pages"
-                }
-              }
+//                h3("text-xs uppercase text-gray-400 dark:text-gray-500 font-semibold pl-3") {
+//                  span("hidden lg:block lg:sidebar-expanded:hidden 2xl:hidden text-center w-6") {
+//                    attributes["aria-hidden"] = "true"
+//                    +"•••"
+//                  }
+//                  span("lg:hidden lg:sidebar-expanded:block 2xl:block") {
+//                    +"Pages"
+//                  }
+//                }
               ul("mt-3") {
 
                 navigationTree.forEach { rootItem ->
@@ -195,14 +199,7 @@ inline fun HTML.portalLayout(
                       href = "#0"
                       div("flex items-center justify-between") {
                         div("flex items-center") {
-                          unsafe {
-                            +"""
-                              <svg class="shrink-0 fill-current ${if (isActive) "text-violet-500" else "text-gray-400 dark:text-gray-500"}" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
-                                <path d="M5.936.278A7.983 7.983 0 0 1 8 0a8 8 0 1 1-8 8c0-.722.104-1.413.278-2.064a1 1 0 1 1 1.932.516A5.99 5.99 0 0 0 2 8a6 6 0 1 0 6-6c-.53 0-1.045.076-1.548.21A1 1 0 1 1 5.936.278Z" />
-                                <path d="M6.068 7.482A2.003 2.003 0 0 0 8 10a2 2 0 1 0-.518-3.932L3.707 2.293a1 1 0 0 0-1.414 1.414l3.775 3.775Z" />
-                              </svg>
-                            """.trimIndent()
-                          }
+                          rootItem.icon?.invoke(isActive)?.let { unsafe { +it } }
                           span("text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200") {
                             +(rootItem.uiString ?: "")
                           }
@@ -210,25 +207,22 @@ inline fun HTML.portalLayout(
                         div("flex shrink-0 ml-2 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200") {
                           unsafe {
                             // Maybe add `${if (isActive) "rotate-180" else "rotate-0"}` to the svg element's classes.
-                            +"""
-                              <svg class="w-3 h-3 shrink-0 ml-1 fill-current text-gray-400 dark:text-gray-500" x-bind:class="open ? 'rotate-180' : 'rotate-0'" viewBox="0 0 12 12">
-                                <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" />
-                              </svg>
-                            """.trimIndent()
+                            +expandOrCollapseMenuGroupArrow
                           }
                         }
                       }
                     }
+                    // Only render a block of secondary level entries is there are any...
                     if (rootItem.children.isNotEmpty()) {
-                      val isActive = rootItem.isActive(currentPath)
-
                       div("lg:hidden lg:sidebar-expanded:block 2xl:block") {
                         ul("pl-8 mt-1") {
+                          // The block of secondary entries is hidden if its ancestor is not active.
                           if (!isActive) {
                             classes += "hidden"
                           }
                           attributes["x-bind:class"] = "open ? 'block!' : 'hidden'"
                           rootItem.children.forEach { secondaryItem ->
+                            val isActive = secondaryItem.isActive(currentPath)
                             li("mb-1 last:mb-0") {
                               a(classes = "block text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition truncate") {
                                 if (isActive) {
@@ -256,11 +250,7 @@ inline fun HTML.portalLayout(
                 attributes["x-on:click"] = "sidebarExpanded = !sidebarExpanded"
                 span("sr-only") { +"Expand / collapse sidebar" }
                 unsafe {
-                  +"""
-                  <svg class="shrink-0 fill-current text-gray-400 dark:text-gray-500 sidebar-expanded:rotate-180" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
-                    <path d="M15 16a1 1 0 0 1-1-1V1a1 1 0 1 1 2 0v14a1 1 0 0 1-1 1ZM8.586 7H1a1 1 0 1 0 0 2h7.586l-2.793 2.793a1 1 0 1 0 1.414 1.414l4.5-4.5A.997.997 0 0 0 12 8.01M11.924 7.617a.997.997 0 0 0-.217-.324l-4.5-4.5a1 1 0 0 0-1.414 1.414L8.586 7M12 7.99a.996.996 0 0 0-.076-.373Z" />
-                  </svg>
-                """.trimIndent()
+                  +expandOrCollapseSidebarArrow
                 }
               }
             }
@@ -285,13 +275,7 @@ inline fun HTML.portalLayout(
                   attributes["x-bind:aria-expanded"] = "sidebarOpen"
                   span("sr-only") { +"Open sidebar" }
                   unsafe {
-                    +"""
-                      <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="4" y="5" width="16" height="2" />
-                        <rect x="4" y="11" width="16" height="2" />
-                        <rect x="4" y="17" width="16" height="2" />
-                      </svg>
-                    """.trimIndent()
+                    +hamburgerIcon
                   }
                 }
               }
@@ -309,14 +293,7 @@ inline fun HTML.portalLayout(
                     attributes["x-on:click.prevent"] = "open = !open"
                     attributes["x-bind:aria-expanded"] = "open"
                     span("sr-only") { +"Notifications" }
-                    unsafe {
-                      +"""
-                        <svg class="fill-current text-gray-500/80 dark:text-gray-400/80" width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M7 0a7 7 0 0 0-7 7c0 1.202.308 2.33.84 3.316l-.789 2.368a1 1 0 0 0 1.265 1.265l2.595-.865a1 1 0 0 0-.632-1.898l-.698.233.3-.9a1 1 0 0 0-.104-.85A4.97 4.97 0 0 1 2 7a5 5 0 0 1 5-5 4.99 4.99 0 0 1 4.093 2.135 1 1 0 1 0 1.638-1.148A6.99 6.99 0 0 0 7 0Z" />
-                          <path d="M11 6a5 5 0 0 0 0 10c.807 0 1.567-.194 2.24-.533l1.444.482a1 1 0 0 0 1.265-1.265l-.482-1.444A4.962 4.962 0 0 0 16 11a5 5 0 0 0-5-5Zm-3 5a3 3 0 0 1 6 0c0 .588-.171 1.134-.466 1.6a1 1 0 0 0-.115.82 1 1 0 0 0-.82.114A2.973 2.973 0 0 1 11 14a3 3 0 0 1-3-3Z" />
-                        </svg>
-                      """.trimIndent()
-                    }
+                    unsafe { +notificationsIcon }
                     div("absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 border-2 border-gray-100 dark:border-gray-900 rounded-full")
                   }
                   div("origin-top-right z-10 absolute top-full -mr-48 sm:mr-0 min-w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700/60 py-1.5 rounded-lg shadow-lg overflow-hidden mt-1 right-0") {
@@ -355,19 +332,8 @@ inline fun HTML.portalLayout(
                   label("flex items-center justify-center cursor-pointer w-8 h-8 hover:bg-gray-100 lg:hover:bg-gray-200 dark:hover:bg-gray-700/50 dark:lg:hover:bg-gray-800 rounded-full") {
                     htmlFor = "light-switch"
                     unsafe {
-                      +"""
-                        <svg class="dark:hidden fill-current text-gray-500/80 dark:text-gray-400/80" width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M8 0a1 1 0 0 1 1 1v.5a1 1 0 1 1-2 0V1a1 1 0 0 1 1-1Z"/>
-                          <path d="M12 8a4 4 0 1 1-8 0 4 4 0 0 1 8 0Zm-4 2a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" />
-                          <path d="M13.657 3.757a1 1 0 0 0-1.414-1.414l-.354.354a1 1 0 0 0 1.414 1.414l.354-.354ZM13.5 8a1 1 0 0 1 1-1h.5a1 1 0 1 1 0 2h-.5a1 1 0 0 1-1-1ZM13.303 11.889a1 1 0 0 0-1.414 1.414l.354.354a1 1 0 0 0 1.414-1.414l-.354-.354ZM8 13.5a1 1 0 0 1 1 1v.5a1 1 0 1 1-2 0v-.5a1 1 0 0 1 1-1ZM4.111 13.303a1 1 0 1 0-1.414-1.414l-.354.354a1 1 0 1 0 1.414 1.414l.354-.354ZM0 8a1 1 0 0 1 1-1h.5a1 1 0 0 1 0 2H1a1 1 0 0 1-1-1ZM3.757 2.343a1 1 0 1 0-1.414 1.414l.354.354A1 1 0 1 0 4.11 2.697l-.354-.354Z" />
-                        </svg>
-                      """.trimIndent()
-                      +"""
-                        <svg class="hidden dark:block fill-current text-gray-500/80 dark:text-gray-400/80" width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M11.875 4.375a.625.625 0 1 0 1.25 0c.001-.69.56-1.249 1.25-1.25a.625.625 0 1 0 0-1.25 1.252 1.252 0 0 1-1.25-1.25.625.625 0 1 0-1.25 0 1.252 1.252 0 0 1-1.25 1.25.625.625 0 1 0 0 1.25c.69.001 1.249.56 1.25 1.25Z" />
-                          <path d="M7.019 1.985a1.55 1.55 0 0 0-.483-1.36 1.44 1.44 0 0 0-1.53-.277C2.056 1.553 0 4.5 0 7.9 0 12.352 3.648 16 8.1 16c3.407 0 6.246-2.058 7.51-4.963a1.446 1.446 0 0 0-.25-1.55 1.554 1.554 0 0 0-1.372-.502c-4.01.552-7.539-2.987-6.97-7ZM2 7.9C2 5.64 3.193 3.664 4.961 2.6 4.82 7.245 8.72 11.158 13.36 11.04 12.265 12.822 10.341 14 8.1 14 4.752 14 2 11.248 2 7.9Z" />
-                        </svg>
-                      """.trimIndent()
+                      +lightModeIcon
+                      +darkModeIcon
                     }
                     span("sr-only") { +"Switch to light / dark version" }
                   }
@@ -397,11 +363,7 @@ inline fun HTML.portalLayout(
                         +userEmail
                       }
                       unsafe {
-                        +"""
-                          <svg class="w-3 h-3 shrink-0 ml-1 fill-current text-gray-400 dark:text-gray-500" viewBox="0 0 12 12">
-                            <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" />
-                          </svg>
-                        """.trimIndent()
+                        +smallDropDownIcon
                       }
                     }
                   }

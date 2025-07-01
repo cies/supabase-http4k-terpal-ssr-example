@@ -38,6 +38,12 @@ data object Paths {
     UrlPath("/portal")
   val dashboard =
     UrlPath(portal, "/dashboard")
+  val dashboard1 =
+    UrlPath(portal, "/dashboard/1")
+  val dashboard2 =
+    UrlPath(portal, "/dashboard/2")
+  val dashboard3 =
+    UrlPath(portal, "/dashboard/3")
   val db =
     UrlPath(portal, "/db")
   val reseed =
