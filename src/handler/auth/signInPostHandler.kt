@@ -3,7 +3,7 @@ package handler.auth
 import Paths
 import dev.forkhandles.result4k.Failure
 import dev.forkhandles.result4k.Success
-import handler.redirectAfterFormSubmission
+import handler.redirectTo
 import html.template.signin.SignInForm
 import html.template.signin.signInPage
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -27,23 +27,25 @@ fun signInPostHandler(req: Request): Response {
     log.warn { "Failed to decode SignUpForm: $reason" }
     return Response(BAD_REQUEST)
   }
-  
+
   when (val validationResult = formDto.validate()) {
     is Invalid -> return signInPage(formDto, validationResult)
 
     is Valid<SignInForm> -> {
-      when (val signInResult = fetchSupabaseTokens(formDto.email ?: "", formDto.password ?: "")) {
+
+      val supabaseTokenResult = fetchSupabaseTokens(formDto.email ?: "", formDto.password ?: "")
+      when (supabaseTokenResult) {
         is Success -> {
-          val (accessTokenCookie, refreshTokenCookie) = signInResult.value.toCookies()
-          val target = if (formDto.target.isNullOrBlank()) Paths.db.path() else formDto.target
-          return redirectAfterFormSubmission(target).cookie(accessTokenCookie).cookie(refreshTokenCookie)
+          val (accessTokenCookie, refreshTokenCookie) = supabaseTokenResult.value.toCookies()
+          val target = if (formDto.target.isNullOrBlank()) Paths.dashboard.path() else formDto.target
+          return redirectTo(target).cookie(accessTokenCookie).cookie(refreshTokenCookie)
         }
 
         is Failure -> {
           val invalidResult = Invalid.of(
             ValidationPath(listOf()),
             // TODO: make this more generic
-            signInResult.reason.message
+            supabaseTokenResult.reason.message
           )
           return signInPage(formDto, invalidResult)
         }

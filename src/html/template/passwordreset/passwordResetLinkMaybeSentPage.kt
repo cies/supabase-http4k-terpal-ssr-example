@@ -1,13 +1,13 @@
 package html.template.passwordreset
 
 import html.layout.htmlPage
-import html.layout.notSignedIn
+import html.layout.authenticationLayout
 import kotlinx.html.*
 import org.http4k.core.Response
 
 fun passwordResetLinkMaybeSentPage(emailAddress: String): Response {
   return htmlPage {
-    notSignedIn("Password reset link sent") {
+    authenticationLayout("Password reset link sent") {
       h1 {
         +"Password reset link sent"
       }

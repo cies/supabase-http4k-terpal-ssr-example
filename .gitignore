@@ -6,4 +6,5 @@
 !/.idea/dictionaries/
 /.idea/dictionaries/*
 !/.idea/dictionaries/project.xml
+/node_modules/
 .env

@@ -10,6 +10,9 @@ data object Paths {
   val static =
     UrlPath("/static")
 
+  val root =
+    UrlPath("/")
+
   val ping =
     UrlPath("/ping")
   val signUp =
@@ -33,8 +36,8 @@ data object Paths {
 
   val portal =
     UrlPath("/portal")
-  val metrics =
-    UrlPath(portal, "/metrics")
+  val dashboard =
+    UrlPath(portal, "/dashboard")
   val db =
     UrlPath(portal, "/db")
   val reseed =

@@ -8,6 +8,8 @@ import java.util.UUID
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import org.http4k.config.Environment
+import org.http4k.config.Environment.Companion.ENV
+import org.http4k.config.Environment.Companion.from
 import org.http4k.config.EnvironmentKey
 import org.http4k.config.Secret
 import org.http4k.config.enum
@@ -35,7 +37,6 @@ val supabaseServiceRoleKey = EnvironmentKey.string().required("SUPABASE_SERVICE_
 val supabasePostgresUrl = EnvironmentKey.uri().required("SUPABASE_POSTGRES_URL")
 val supabasePostgresUsername = EnvironmentKey.string().required("SUPABASE_POSTGRES_USERNAME")
 val supabasePostgresPassword = EnvironmentKey.secret().required("SUPABASE_POSTGRES_PASSWORD")
-
 private val defaultConfig = Environment.defaults(
   appMode of AppMode.PROD,
   supabaseBaseUrl of Uri.of("http://localhost:8080"),
@@ -43,8 +44,7 @@ private val defaultConfig = Environment.defaults(
   supabasePostgresUsername of "postgres",
   supabasePostgresPassword of Secret("postgres"),
 )
-
-val env = Environment.from(File(".env")) overrides Environment.ENV overrides defaultConfig
+val env = from(File(".env")) overrides ENV overrides defaultConfig
 
 val jwtContextKey = RequestKey.required<JwtData>("jwt")
 val userUuidContextKey = RequestKey.required<UUID>("userUuid")

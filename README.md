@@ -182,6 +182,14 @@ While JTE/KTE is faster (both runtime and compile time), I found it to be clunky
 So I ended up with `kotlinx.html`, I'll look into things to mitigate its slow (incremental) compile times.
 
 
+### Run the `postcss` tool
+
+```sh
+sudo npm install -g pnpm
+pnpm install
+pnpm dev
+```
+
 ### TODO
 
 * implement some tests

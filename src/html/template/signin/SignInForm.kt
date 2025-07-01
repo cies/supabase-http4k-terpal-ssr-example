@@ -22,13 +22,15 @@ data class SignInForm(
   fun validate(): ValidationResult<SignInForm> {
     return Validation {
       SignInForm::email required {
-        pattern(".+@.+\\..+") hint "Please provide a valid email address"
+        hint = "Email address is required."
+        pattern(".+@.+\\..+") hint "Please provide a valid email address."
       }
       SignInForm::password required {
-        minLength(8) hint "Password must be at least 8 characters long"
-        pattern(".+[a-z]+.+") hint "Password must contain at least one lowercase letter"
-        pattern(".+[A-Z]+.+") hint "Password must contain at least one uppercase letter"
-        pattern(".+[0-9]+.+") hint "Password must contain at least one digit"
+        hint = "Password is required."
+        minLength(8) hint "Password must be at least 8 characters long."
+        pattern(".+[a-z]+.+") hint "Password must contain at least one lowercase letter."
+        pattern(".+[A-Z]+.+") hint "Password must contain at least one uppercase letter."
+        pattern(".+[0-9]+.+") hint "Password must contain at least one digit."
       }
     }(this)
   }

@@ -3,7 +3,10 @@ package html.template.passwordreset
 import io.konform.validation.Validation
 import io.konform.validation.ValidationResult
 import io.konform.validation.constraints.pattern
+import kotlinx.serialization.Serializable
 
+
+@Serializable
 data class RequestPasswordResetForm(val email: String?) {
 
   companion object {
@@ -13,7 +16,8 @@ data class RequestPasswordResetForm(val email: String?) {
   fun validate(): ValidationResult<RequestPasswordResetForm> {
     return Validation {
       RequestPasswordResetForm::email required {
-        pattern(".+@.+\\..+") hint "Please provide a valid email address"
+        hint = "Email address is required."
+        pattern(".+@.+\\..+") hint "Please provide a valid email address."
       }
     }(this)
   }
