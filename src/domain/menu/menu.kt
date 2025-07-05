@@ -1,5 +1,7 @@
 package domain.menu
 
+import html.dailIcon
+import html.slidersIcon
 import lib.urlpath.UrlPath
 
 /** An entry in a navigation menus (both the "sidebar menu" and additional "menu tabs" if any). */
@@ -65,13 +67,11 @@ data class NavigationEntry(
 /**
  * Enum of all navigation entry keys by which we make referring to menu entries typo-safe.
  * Only entries with children may need a key, and only if they need to be referred to.
+ *
+ * NOTE: Currently not yet needed because we only have a sidebar menu (once we introduce additional tabbed menus,
+ * we will need to use this enum to refer to those menus).
  */
-enum class NavigationEntryKey {
-  Root,
-  LimitedManageOrganizations,
-  ManageOrganizations,
-  ManageOrganizationsTab
-}
+enum class NavigationEntryKey
 
 val navigationTree = listOf(
   NavigationEntry(
