@@ -9,12 +9,14 @@ import lib.supabase.client
 import supabaseBaseUrl
 import supabaseServiceRoleKey
 import dev.forkhandles.result4k.valueOrNull
+import html.template.signin.SignInForm
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.konform.validation.Invalid
 import io.konform.validation.Valid
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromJsonElement
+import lib.formparser.decodeOrFailWith
 import org.http4k.core.Method.POST
 import org.http4k.core.Request
 import org.http4k.core.Response
@@ -26,9 +28,10 @@ import org.http4k.core.body.form
 private val log = KotlinLogging.logger {}
 
 fun requestPasswordResetPostHandler(req: Request): Response {
-  val deserialized = formToJsonElement(req.form()).valueOrNull() ?: throw AssertionError("Deserialization failed")
-  val formDto: RequestPasswordResetForm = Json{}.decodeFromJsonElement(deserialized)
-    ?: return Response(BAD_REQUEST)
+  val formDto: RequestPasswordResetForm = req.form().decodeOrFailWith { reason ->
+    log.warn { "Failed to decode RequestPasswordResetForm: $reason" }
+    return Response(BAD_REQUEST)
+  }
 
   when (val validationResult = formDto.validate()) {
     is Invalid -> return requestPasswordResetPage(formDto, validationResult)
